@@ -10,4 +10,5 @@ export const config = {
     jwtAccessExpiry: process.env.JWT_ACCESS_EXPIRY || "15m",
     jwtRefreshExpiry: process.env.JWT_REFRESH_EXPIRY || "7d",
     env: process.env.NODE_ENV || "development",
+    allowedOrigins: process.env.ALLOWED_ORIGINS || "http://localhost:3000",
 };
