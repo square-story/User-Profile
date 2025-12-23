@@ -1,8 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import { AuthUtils } from "../utils/AuthUtils";
 
+import { UserPayload } from "../interfaces/UserPayload";
+
 export interface AuthRequest extends Request {
-    user?: any;
+    user?: UserPayload;
 }
 
 export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {

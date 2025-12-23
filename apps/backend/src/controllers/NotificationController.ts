@@ -10,7 +10,7 @@ export class NotificationController {
 
     list = async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
-            const userId = req.user.userId;
+            const userId = req.user!.userId;
             const notifications = await this.notificationService.getNotifications(userId);
             res.status(200).json({ success: true, data: notifications });
         } catch (error) {

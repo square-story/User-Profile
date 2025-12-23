@@ -1,4 +1,6 @@
+import { IUserProfile } from "../models/User";
+
 export interface IProfileService {
-    getProfile(userId: string): Promise<any>;
-    updateProfile(userId: string, data: any): Promise<any>;
+    getProfile(userId: string): Promise<IUserProfile>;
+    updateProfile(userId: string, data: Partial<IUserProfile>): Promise<IUserProfile>;
 }

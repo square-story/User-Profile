@@ -3,6 +3,7 @@ import { IProfileService } from "../interfaces/IProfileService";
 import { IUserRepository } from "../interfaces/IUserRepository";
 import { INotificationService } from "../interfaces/INotificationService";
 import { TYPES } from "../constants/types";
+import { IUserProfile } from "../models/User";
 
 @injectable()
 export class ProfileService implements IProfileService {
@@ -11,7 +12,7 @@ export class ProfileService implements IProfileService {
         @inject(TYPES.NotificationService) private notificationService: INotificationService
     ) { }
 
-    async getProfile(userId: string): Promise<any> {
+    async getProfile(userId: string): Promise<IUserProfile> {
         const user = await this.userRepository.findById(userId);
         if (!user) {
             throw new Error("User not found");
@@ -19,7 +20,7 @@ export class ProfileService implements IProfileService {
         return user.profile;
     }
 
-    async updateProfile(userId: string, data: any): Promise<any> {
+    async updateProfile(userId: string, data: Partial<IUserProfile>): Promise<IUserProfile> {
         const updatedUser = await this.userRepository.updateProfile(userId, data);
         if (!updatedUser) {
             throw new Error("User not found");

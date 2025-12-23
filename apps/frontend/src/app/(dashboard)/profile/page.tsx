@@ -35,7 +35,7 @@ export default function ProfilePage() {
         }
     };
 
-    if (!profile) return <div className="p-8">Loading...</div>;
+    if (!profile) return <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
 
     return (
         <div className="p-8 space-y-8 max-w-4xl mx-auto">

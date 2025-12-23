@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { AuthRequest } from "../middlewares/authMiddleware";
 import { injectable, inject } from "inversify";
 import { TYPES } from "../constants/types";
 import { IAuthService } from "../interfaces/IAuthService";
@@ -50,8 +51,8 @@ export class AuthController {
 
     logout = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            // Assuming middleware adds user to req (req.user)
-            const userId = (req as any).user?.userId;
+            // Cast to AuthRequest since middleware ensures it
+            const userId = (req as AuthRequest).user?.userId;
             if (userId) {
                 await this.authService.logout(userId);
             }

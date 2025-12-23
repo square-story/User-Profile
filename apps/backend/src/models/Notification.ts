@@ -11,6 +11,6 @@ const NotificationSchema: Schema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     message: { type: String, required: true },
     read: { type: Boolean, default: false },
-}, { timestamps: true });
+}, { timestamps: true, capped: { size: 1048576, max: 1000 } }); // 1MB or 1000 docs
 
 export const Notification = mongoose.model<INotification>("Notification", NotificationSchema);

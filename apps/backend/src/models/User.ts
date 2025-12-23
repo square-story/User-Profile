@@ -1,14 +1,16 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+export interface IUserProfile {
+    firstName: string;
+    lastName: string;
+    bio?: string;
+}
+
 export interface IUser extends Document {
     email: string;
     passwordHash: string;
     role: "admin" | "user";
-    profile: {
-        firstName: string;
-        lastName: string;
-        bio?: string;
-    };
+    profile: IUserProfile;
     refreshToken?: string;
     createdAt: Date;
     updatedAt: Date;

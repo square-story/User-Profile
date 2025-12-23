@@ -5,6 +5,7 @@ import { TYPES } from "../constants/types";
 import { CreateUserDto } from "../dtos/CreateUserDto";
 import { IUser } from "../models/User";
 import { AuthUtils } from "../utils/AuthUtils";
+import { UserPayload } from "../interfaces/UserPayload";
 
 @injectable()
 export class AuthService implements IAuthService {
@@ -24,7 +25,7 @@ export class AuthService implements IAuthService {
 
         const newUser = await this.userRepository.create({ ...data, passwordHash });
 
-        const payload = { userId: newUser._id as unknown as string, role: newUser.role };
+        const payload: UserPayload = { userId: newUser._id as unknown as string, email: newUser.email, role: newUser.role };
         const accessToken = AuthUtils.generateAccessToken(payload);
         const refreshToken = AuthUtils.generateRefreshToken(payload);
 
@@ -44,7 +45,7 @@ export class AuthService implements IAuthService {
             throw new Error("Invalid credentials");
         }
 
-        const payload = { userId: user._id as unknown as string, role: user.role };
+        const payload: UserPayload = { userId: user._id as unknown as string, email: user.email, role: user.role };
         const accessToken = AuthUtils.generateAccessToken(payload);
         const refreshToken = AuthUtils.generateRefreshToken(payload);
 
@@ -61,7 +62,7 @@ export class AuthService implements IAuthService {
             throw new Error("Invalid refresh token");
         }
 
-        const newPayload = { userId: user._id as unknown as string, role: user.role };
+        const newPayload: UserPayload = { userId: user._id as unknown as string, email: user.email, role: user.role };
         const newAccessToken = AuthUtils.generateAccessToken(newPayload);
         const newRefreshToken = AuthUtils.generateRefreshToken(newPayload);
 

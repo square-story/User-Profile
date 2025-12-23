@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { config } from "../config";
+import { UserPayload } from "../interfaces/UserPayload";
 
 export class AuthUtils {
     static async hashPassword(password: string): Promise<string> {
@@ -12,19 +13,19 @@ export class AuthUtils {
         return await bcrypt.compare(password, hash);
     }
 
-    static generateAccessToken(payload: object): string {
-        return jwt.sign(payload, config.jwtSecret, { expiresIn: config.jwtAccessExpiry as any });
+    static generateAccessToken(payload: UserPayload): string {
+        return jwt.sign(payload, config.jwtSecret, { expiresIn: config.jwtAccessExpiry as jwt.SignOptions["expiresIn"] });
     }
 
-    static generateRefreshToken(payload: object): string {
-        return jwt.sign(payload, config.jwtRefreshSecret, { expiresIn: config.jwtRefreshExpiry as any });
+    static generateRefreshToken(payload: UserPayload): string {
+        return jwt.sign(payload, config.jwtRefreshSecret, { expiresIn: config.jwtRefreshExpiry as jwt.SignOptions["expiresIn"] });
     }
 
-    static verifyAccessToken(token: string): any {
-        return jwt.verify(token, config.jwtSecret);
+    static verifyAccessToken(token: string): UserPayload {
+        return jwt.verify(token, config.jwtSecret) as UserPayload;
     }
 
-    static verifyRefreshToken(token: string): any {
-        return jwt.verify(token, config.jwtRefreshSecret);
+    static verifyRefreshToken(token: string): UserPayload {
+        return jwt.verify(token, config.jwtRefreshSecret) as UserPayload;
     }
 }

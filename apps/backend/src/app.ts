@@ -26,8 +26,13 @@ app.get("/health", (req, res) => {
     res.status(200).json({ status: "ok", env: config.env });
 });
 
+// Custom Error Interface
+interface HttpError extends Error {
+    status?: number;
+}
+
 // Error Handling Middleware
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);
     res.status(err.status || 500).json({
         success: false,
