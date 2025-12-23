@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -21,7 +22,12 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
     // Prevent flash of content or redirects before hydration
     if (!isMounted) {
-        return <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        return (
+            <div className="flex h-screen items-center justify-center space-y-4 flex-col">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <Skeleton className="h-4 w-48" />
+            </div>
+        );
     }
 
     if (!isAuthenticated) return null;
