@@ -10,4 +10,6 @@ export interface IUserRepository {
     saveResetToken(id: string, token: string, expires: Date): Promise<void>;
     findByResetToken(token: string): Promise<IUser | null>;
     updatePassword(id: string, passwordHash: string): Promise<void>;
+    findByVerificationCode(email: string, code: string): Promise<IUser | null>;
+    verifyUser(id: string): Promise<void>;
 }

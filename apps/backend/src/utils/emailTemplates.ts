@@ -1,10 +1,10 @@
 export const emailTemplates = {
-    verification: (name: string, token: string) => `
+    verification: (name: string, code: string) => `
         <div style="font-family: Arial, sans-serif; padding: 20px;">
             <h2>Verify Your Email</h2>
             <p>Hi ${name},</p>
-            <p>Please verify your email by clicking the link below:</p>
-            <a href="http://localhost:3000/verify-email?token=${token}" style="padding: 10px 20px; background-color: #0070f3; color: white; text-decoration: none; border-radius: 5px;">Verify Email</a>
+            <p>Please use the following code to verify your email address:</p>
+            <div style="font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #333; margin: 20px 0;">${code}</div>
             <p>If you didn't request this, you can ignore this email.</p>
         </div>
     `,

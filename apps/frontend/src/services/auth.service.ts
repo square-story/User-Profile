@@ -9,6 +9,11 @@ export const authService = {
 
     register: async (data: IRegister) => {
         const response = await api.post("/auth/register", data);
+        return response.data;
+    },
+
+    verifyEmail: async (email: string, code: string) => {
+        const response = await api.post("/auth/verify-email", { email, code });
         return response.data.data;
     },
 

@@ -31,7 +31,21 @@ export class AuthController {
 
     register = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const result = await this.authService.register(req.body);
+            await this.authService.register(req.body);
+
+            res.status(201).json({
+                success: true,
+                message: "Registration successful. Please check your email for the verification code.",
+            });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { email, code } = req.body;
+            const result = await this.authService.verifyEmail(email, code);
 
             res.cookie("refreshToken", result.refreshToken, {
                 httpOnly: true,
@@ -40,7 +54,7 @@ export class AuthController {
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             });
 
-            res.status(201).json({
+            res.status(200).json({
                 success: true,
                 data: { accessToken: result.accessToken, user: result.user },
             });

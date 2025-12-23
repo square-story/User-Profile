@@ -49,4 +49,20 @@ export class UserRepository implements IUserRepository {
             resetPasswordExpires: undefined,
         });
     }
+
+    async findByVerificationCode(email: string, code: string): Promise<IUser | null> {
+        return await User.findOne({
+            email,
+            verificationCode: code,
+            verificationCodeExpires: { $gt: new Date() },
+        });
+    }
+
+    async verifyUser(id: string): Promise<void> {
+        await User.findByIdAndUpdate(id, {
+            status: "active",
+            verificationCode: undefined,
+            verificationCodeExpires: undefined,
+        });
+    }
 }
