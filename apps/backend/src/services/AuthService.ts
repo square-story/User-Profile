@@ -43,7 +43,8 @@ export class AuthService implements IAuthService {
             ...data,
             passwordHash,
             verificationCode,
-            verificationCodeExpires
+            verificationCodeExpires,
+            verificationAttempts: 0
         };
 
         await this.userRepository.create(newUserInitial);
@@ -53,8 +54,27 @@ export class AuthService implements IAuthService {
     }
 
     async verifyEmail(email: string, code: string): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
-        const user = await this.userRepository.findByVerificationCode(email, code);
+        // Find user by email first to check attempts
+        const user = await this.userRepository.findByEmail(email);
         if (!user) {
+            throw new Error("Invalid or expired verification code");
+        }
+
+        if (user.status === 'active') {
+            throw new Error("User already verified");
+        }
+
+        // Check attempts
+        if (user.verificationAttempts && user.verificationAttempts >= 5) {
+            throw new Error("Too many failed attempts. Please request a new code.");
+        }
+
+        // Check code and expiry
+        if (user.verificationCode !== code || !user.verificationCodeExpires || user.verificationCodeExpires < new Date()) {
+            // Increment attempts
+            await this.userRepository.updateUser(user._id as unknown as string, {
+                verificationAttempts: (user.verificationAttempts || 0) + 1
+            });
             throw new Error("Invalid or expired verification code");
         }
 
@@ -69,6 +89,41 @@ export class AuthService implements IAuthService {
         return { accessToken, refreshToken, user };
     }
 
+    async resendVerification(email: string): Promise<void> {
+        const user = await this.userRepository.findByEmail(email);
+        if (!user) {
+            // Silent failure or generic message to prevent enumeration (security best practice vs UX)
+            // For this prompt's UX requirements, might stick to throwing if user not found, or just return.
+            // Given user story implies existing user context, throw specific if logical.
+            throw new Error("User not found");
+        }
+
+        if (user.status === 'active') {
+            throw new Error("User already verified");
+        }
+
+        // Rate limit: 60s
+        if (user.lastOtpSentAt) {
+            const timeSinceLastOtp = Date.now() - user.lastOtpSentAt.getTime();
+            if (timeSinceLastOtp < 60000) {
+                const remaining = Math.ceil((60000 - timeSinceLastOtp) / 1000);
+                throw new Error(`Please wait ${remaining} seconds before requesting a new code.`);
+            }
+        }
+
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const verificationCodeExpires = new Date(Date.now() + 3600000); // 1 hour
+
+        await this.userRepository.updateUser(user._id as unknown as string, {
+            verificationCode,
+            verificationCodeExpires,
+            verificationAttempts: 0,
+            lastOtpSentAt: new Date()
+        });
+
+        await this.emailService.sendVerificationEmail(user.email, user.profile.firstName, verificationCode);
+    }
+
     async login(credentials: { email: string; passwordHash: string }): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
         const user = await this.userRepository.findByEmail(credentials.email);
         if (!user) {
@@ -76,6 +131,12 @@ export class AuthService implements IAuthService {
         }
 
         if (user.status !== "active") {
+            if (user.verificationCode) {
+                // If user has a verification code but is inactive, it means they are pending verification
+                // Or we can check a specific 'pending' status if we had one.
+                // Assuming status 'inactive' + existing code = pending verification.
+                throw new Error("User not verified");
+            }
             throw new Error("Your account has been deactivated. Please contact support.");
         }
 

@@ -47,6 +47,11 @@ export function LoginForm() {
             toast.success("Login successful");
             router.push("/profile");
         } catch (err: any) {
+            if (err.response?.data?.message === "User not verified") {
+                toast.error("Please verify your email first.");
+                router.push(`/register/verify?email=${encodeURIComponent(values.email)}`);
+                return;
+            }
             toast.error(err.response?.data?.message || "Something went wrong");
         } finally {
             setLoading(false);

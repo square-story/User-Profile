@@ -17,6 +17,8 @@ export interface IUser extends Document {
     resetPasswordExpires?: Date;
     verificationCode?: string;
     verificationCodeExpires?: Date;
+    verificationAttempts?: number;
+    lastOtpSentAt?: Date;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -37,6 +39,8 @@ const UserSchema: Schema = new Schema(
         resetPasswordExpires: { type: Date },
         verificationCode: { type: String },
         verificationCodeExpires: { type: Date },
+        verificationAttempts: { type: Number, default: 0 },
+        lastOtpSentAt: { type: Date },
     },
     { timestamps: true }
 );

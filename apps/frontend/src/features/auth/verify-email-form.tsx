@@ -37,6 +37,20 @@ export function VerifyEmailForm() {
     const email = searchParams.get("email");
     const { login } = useAuthStore();
     const [isLoading, setIsLoading] = React.useState(false);
+    const [isResending, setIsResending] = React.useState(false);
+    const [countdown, setCountdown] = React.useState(0);
+
+    React.useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (countdown > 0) {
+            timer = setInterval(() => {
+                setCountdown((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => {
+            if (timer) clearInterval(timer);
+        };
+    }, [countdown]);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -61,6 +75,24 @@ export function VerifyEmailForm() {
             toast.error(err.response?.data?.message || "Verification failed. Please check your code.");
         } finally {
             setIsLoading(false);
+        }
+    }
+
+    async function handleResend() {
+        if (!email) return;
+        try {
+            setIsResending(true);
+            await authService.resendVerification(email);
+            toast.success("Verification code sent!");
+            setCountdown(60); // 60 seconds cooldown
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Failed to resend code.");
+            if (err.response?.data?.message?.includes("wait")) {
+                // extract seconds if possible or Just set a conservative 30s
+                setCountdown(30);
+            }
+        } finally {
+            setIsResending(false);
         }
     }
 
@@ -105,6 +137,20 @@ export function VerifyEmailForm() {
                         </Button>
                     </form>
                 </Form>
+                <div className="mt-4 text-center text-sm">
+                    {countdown > 0 ? (
+                        <p className="text-muted-foreground">Resend code in {countdown}s</p>
+                    ) : (
+                        <Button
+                            variant="link"
+                            className="p-0 h-auto font-normal"
+                            onClick={handleResend}
+                            disabled={isResending || !email}
+                        >
+                            {isResending ? "Sending..." : "Resend Code"}
+                        </Button>
+                    )}
+                </div>
             </CardContent>
         </Card>
     );

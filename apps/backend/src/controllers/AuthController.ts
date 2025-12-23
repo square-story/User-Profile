@@ -63,6 +63,19 @@ export class AuthController {
         }
     };
 
+    resendVerification = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { email } = req.body;
+            await this.authService.resendVerification(email);
+            res.status(200).json({
+                success: true,
+                message: "Verification code sent successfully.",
+            });
+        } catch (error) {
+            next(error);
+        }
+    };
+
     logout = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // Cast to AuthRequest since middleware ensures it
