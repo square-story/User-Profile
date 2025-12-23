@@ -1,4 +1,5 @@
 import { injectable, inject } from "inversify";
+import crypto from "crypto";
 import { IAuthService } from "../interfaces/IAuthService";
 import { IUserRepository } from "../interfaces/IUserRepository";
 import { TYPES } from "../constants/types";
@@ -184,21 +185,45 @@ export class AuthService implements IAuthService {
             throw new Error("User with this email does not exist");
         }
 
-        const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        // Generate a random reset token (32 bytes hex)
+        const resetToken = crypto.randomBytes(32).toString("hex");
+
+        // Hash the token before storing it
+        const resetTokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
+
         const expires = new Date(Date.now() + 3600000); // 1 hour
 
-        await this.userRepository.saveResetToken(user._id as unknown as string, resetToken, expires);
+        // Save the *hash* to the database
+        await this.userRepository.saveResetToken(user._id as unknown as string, resetTokenHash, expires);
+
+        // Send the *raw* token to the user
         await this.emailService.sendPasswordResetEmail(user.email, user.profile.firstName, resetToken);
     }
 
+    async validateResetToken(token: string): Promise<void> {
+        const resetTokenHash = crypto.createHash("sha256").update(token).digest("hex");
+        const user = await this.userRepository.findByResetToken(resetTokenHash);
+        if (!user) {
+            throw new Error("Invalid or expired reset token");
+        }
+    }
+
     async resetPassword(token: string, newPassword: string): Promise<void> {
-        const user = await this.userRepository.findByResetToken(token);
+        // Hash the incoming token to find the user
+        const resetTokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+        const user = await this.userRepository.findByResetToken(resetTokenHash);
         if (!user) {
             throw new Error("Invalid or expired reset token");
         }
 
         const passwordHash = await AuthUtils.hashPassword(newPassword);
+
+        // Update password and clear reset token
         await this.userRepository.updatePassword(user._id as unknown as string, passwordHash);
+
+        // Invalidate all existing sessions by clearing the refresh token
+        await this.userRepository.updateRefreshToken(user._id as unknown as string, null);
     }
 
     async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {

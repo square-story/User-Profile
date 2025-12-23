@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { authService } from "@/services/auth.service";
 import { toast } from "sonner";
+import Link from "next/link";
 
 const formSchema = z.object({
     password: z.string().min(6, { message: "Password must be at least 6 characters" }),
@@ -32,6 +33,29 @@ export function ResetPasswordForm() {
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
     const [isLoading, setIsLoading] = React.useState(false);
+    const [isTokenValid, setIsTokenValid] = React.useState<boolean | null>(null);
+    const [isCheckingToken, setIsCheckingToken] = React.useState(true); // Start as true
+
+    React.useEffect(() => {
+        if (!token) {
+            setIsCheckingToken(false);
+            setIsTokenValid(false);
+            return;
+        }
+
+        const validateToken = async () => {
+            try {
+                await authService.validateResetToken(token);
+                setIsTokenValid(true);
+            } catch (error) {
+                setIsTokenValid(false);
+            } finally {
+                setIsCheckingToken(false);
+            }
+        };
+
+        validateToken();
+    }, [token]);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -57,6 +81,39 @@ export function ResetPasswordForm() {
         } finally {
             setIsLoading(false);
         }
+    }
+
+    if (isCheckingToken) {
+        return (
+            <Card className="w-[350px]">
+                <CardContent className="pt-6 text-center">
+                    <p>Verifying link...</p>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (!isTokenValid) {
+        return (
+            <Card className="w-[350px]">
+                <CardHeader>
+                    <CardTitle className="text-destructive">Invalid Link</CardTitle>
+                    <CardDescription>
+                        This password reset link is invalid or has expired.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Button asChild className="w-full" variant="secondary">
+                        <Link href="/forgot-password">Request a new link</Link>
+                    </Button>
+                    <div className="text-center text-sm">
+                        <Link href="/login" className="text-primary hover:underline">
+                            Back to Login
+                        </Link>
+                    </div>
+                </CardContent>
+            </Card>
+        );
     }
 
     return (
