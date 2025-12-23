@@ -9,8 +9,6 @@ export function NotificationList() {
 
     React.useEffect(() => {
         fetchNotifications();
-        const interval = setInterval(fetchNotifications, 10000); // Poll every 10s
-        return () => clearInterval(interval);
     }, []);
 
     const fetchNotifications = async () => {
