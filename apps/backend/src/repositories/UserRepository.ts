@@ -63,6 +63,11 @@ export class UserRepository implements IUserRepository {
             status: "active",
             verificationCode: undefined,
             verificationCodeExpires: undefined,
+            verificationAttempts: undefined,
         });
+    }
+
+    async updateUser(id: string, data: Partial<IUser>): Promise<IUser | null> {
+        return await User.findByIdAndUpdate(id, data, { new: true });
     }
 }

@@ -12,4 +12,5 @@ export interface IUserRepository {
     updatePassword(id: string, passwordHash: string): Promise<void>;
     findByVerificationCode(email: string, code: string): Promise<IUser | null>;
     verifyUser(id: string): Promise<void>;
+    updateUser(id: string, data: Partial<IUser>): Promise<IUser | null>;
 }
