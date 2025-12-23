@@ -53,9 +53,8 @@ export function RegisterForm() {
                 }
             };
 
-            const { accessToken, user } = await authService.register(payload);
-            login(accessToken, user);
-            router.push("/profile");
+            await authService.register(payload);
+            router.push(`/register/verify?email=${encodeURIComponent(values.email)}`);
         } catch (err: any) {
             console.error(err);
             setError(err.response?.data?.message || "Something went wrong");

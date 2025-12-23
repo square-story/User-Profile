@@ -16,7 +16,7 @@ export class AuthService implements IAuthService {
         @inject(TYPES.EmailService) private emailService: IEmailService
     ) { }
 
-    async register(data: CreateUserDto): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
+    async register(data: CreateUserDto): Promise<void> {
         const existingUser = await this.userRepository.findByEmail(data.email);
         if (existingUser) {
             throw new Error("User already exists");
@@ -24,22 +24,49 @@ export class AuthService implements IAuthService {
 
         const passwordHash = await AuthUtils.hashPassword(data.passwordHash);
 
-        // We treat data.passwordHash as the plain password input here for simplicity or assume DTO mapping handled it.
-        // Ideally, DTO should have 'password' and we map it to 'passwordHash' in model.
-        // For now, let's assume the DTO field carries the plain password as intended by the previous step's input.
+        // Generate 6-digit OTP
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const verificationCodeExpires = new Date(Date.now() + 3600000); // 1 hour
 
-        const newUser = await this.userRepository.create({ ...data, passwordHash });
+        // Create user with inactive status and verification code
+        // Note: The User model creates status: 'inactive' by default now, but we'll set the code fields explicitly
+        // We'll trust the repository create method to handle standard fields, but we might need to update it to accept code fields
+        // Or update the user immediately after creation. Since repository.create takes DTO, and DTO doesn't have these codes...
+        // We can pass them if we update the DTO/repository signature, OR we act like this:
+        // Ideally, we update the user right after creation or pass extra args.
+        // Let's assume the repository.create call can take extra fields or we update it.
+        // Actually, the simplest way without changing Repository interface too much is to Create then Update, OR
+        // Cast the object to any if the repository implementation is flexible (it uses `new User(data)`).
+        // Let's modify the data object by casting.
 
-        const payload: UserPayload = { userId: newUser._id as unknown as string, email: newUser.email, role: newUser.role };
+        const newUserInitial: any = {
+            ...data,
+            passwordHash,
+            verificationCode,
+            verificationCodeExpires
+        };
+
+        await this.userRepository.create(newUserInitial);
+
+        // Send Email (Async, non-blocking)
+        await this.emailService.sendVerificationEmail(data.email, data.profile.firstName, verificationCode);
+    }
+
+    async verifyEmail(email: string, code: string): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
+        const user = await this.userRepository.findByVerificationCode(email, code);
+        if (!user) {
+            throw new Error("Invalid or expired verification code");
+        }
+
+        await this.userRepository.verifyUser(user._id as unknown as string);
+
+        const payload: UserPayload = { userId: user._id as unknown as string, email: user.email, role: user.role };
         const accessToken = AuthUtils.generateAccessToken(payload);
         const refreshToken = AuthUtils.generateRefreshToken(payload);
 
-        await this.userRepository.updateRefreshToken(newUser._id as unknown as string, refreshToken);
+        await this.userRepository.updateRefreshToken(user._id as unknown as string, refreshToken);
 
-        // Send Email (Async, non-blocking)
-        this.emailService.sendVerificationEmail(newUser.email, newUser.profile.firstName, "mock-verification-token");
-
-        return { accessToken, refreshToken, user: newUser };
+        return { accessToken, refreshToken, user };
     }
 
     async login(credentials: { email: string; passwordHash: string }): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
