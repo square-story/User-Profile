@@ -15,45 +15,44 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { authService } from "@/services/auth.service";
-import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
+import Link from "next/link";
 
 const formSchema = z.object({
-    email: z.string().email(),
-    password: z.string().min(6),
+    email: z.string().email({ message: "Invalid email address" }),
 });
 
-export function LoginForm() {
+export function ForgotPasswordForm() {
     const router = useRouter();
-    const { login } = useAuthStore();
-    const [error, setError] = React.useState<string | null>(null);
+    const [isLoading, setIsLoading] = React.useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             email: "",
-            password: "",
         },
     });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
-            const { accessToken, user } = await authService.login(values.email, values.password);
-            login(accessToken, user);
-            toast.success("Login successful");
-            router.push("/profile");
+            setIsLoading(true);
+            await authService.forgotPassword(values.email);
+            toast.success("Reset link sent to the email");
+            router.push("/login");
         } catch (err: any) {
             toast.error(err.response?.data?.message || "Something went wrong");
+        } finally {
+            setIsLoading(false);
         }
     }
 
     return (
         <Card className="w-[350px]">
             <CardHeader>
-                <CardTitle>Login</CardTitle>
-                <CardDescription>Enter your credentials to access your account.</CardDescription>
+                <CardTitle>Forgot Password</CardTitle>
+                <CardDescription>Enter your email to receive a reset code.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Form {...form}>
@@ -71,26 +70,14 @@ export function LoginForm() {
                                 </FormItem>
                             )}
                         />
-                        <FormField
-                            control={form.control}
-                            name="password"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <div className="flex items-center justify-between">
-                                        <FormLabel>Password</FormLabel>
-                                        <a href="/forgot-password" className="text-sm font-medium text-primary hover:underline">
-                                            Forgot password?
-                                        </a>
-                                    </div>
-                                    <FormControl>
-                                        <Input type="password" placeholder="******" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        {error && <p className="text-red-500 text-sm">{error}</p>}
-                        <Button type="submit" className="w-full">Login</Button>
+                        <Button type="submit" className="w-full" disabled={isLoading}>
+                            {isLoading ? "Sending..." : "Send Reset Link"}
+                        </Button>
+                        <div className="text-center text-sm">
+                            <Link href="/login" className="text-primary hover:underline">
+                                Back to Login
+                            </Link>
+                        </div>
                     </form>
                 </Form>
             </CardContent>
