@@ -93,11 +93,9 @@ export class AuthService implements IAuthService {
     async forgotPassword(email: string): Promise<void> {
         const user = await this.userRepository.findByEmail(email);
         if (!user) {
-            // Do not reveal if user exists
-            return;
+            throw new Error("User with this email does not exist");
         }
 
-        // Generate simple random token
         const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         const expires = new Date(Date.now() + 3600000); // 1 hour
 
