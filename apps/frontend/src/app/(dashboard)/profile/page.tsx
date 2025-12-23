@@ -8,19 +8,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthStore } from "@/store/useAuthStore";
 import { EditProfileForm } from "@/features/profile/edit-profile-form";
 import { NotificationList } from "@/features/notifications/notification-list";
-import { IPassword } from "@/types";
 import ChangePasswordForm from "@/features/change-password/change-password-form";
 import { profileService } from "@/services/profile.service";
 import { authService } from "@/services/auth.service";
+import { ProfileSkeleton } from "@/features/profile/profile-skeleton";
 
 export default function ProfilePage() {
     const { user, logout } = useAuthStore();
     const router = useRouter();
     const [profile, setProfile] = React.useState<any>(null);
-    const [password, setPassword] = React.useState<IPassword>({
-        currentPassword: "",
-        newPassword: ""
-    });
 
     const fetchProfile = React.useCallback(async () => {
         if (!user) return;
@@ -46,7 +42,7 @@ export default function ProfilePage() {
         }
     };
 
-    if (!profile) return <div className="flex justify-center items-center h-64"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>
+    if (!profile) return <ProfileSkeleton />
 
     return (
         <div className="p-8 space-y-8 max-w-4xl mx-auto">
