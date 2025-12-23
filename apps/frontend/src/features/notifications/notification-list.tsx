@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import api from "@/lib/api";
+import { notificationService } from "@/services/notification.service";
 
 export function NotificationList() {
     const [notifications, setNotifications] = React.useState<any[]>([]);
@@ -13,8 +13,8 @@ export function NotificationList() {
 
     const fetchNotifications = async () => {
         try {
-            const res = await api.get("/notifications");
-            setNotifications(res.data.data);
+            const data = await notificationService.getAll();
+            setNotifications(data.data);
         } catch (err) {
             console.error(err);
         }

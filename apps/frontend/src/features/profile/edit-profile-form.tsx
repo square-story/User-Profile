@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import api from "@/lib/api";
+import { profileService } from "@/services/profile.service";
+import { toast } from "sonner";
 
 const formSchema = z.object({
     firstName: z.string().min(2),
@@ -36,13 +37,12 @@ export function EditProfileForm({ initialData, onUpdate }: { initialData: any, o
     });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        setError(null);
         try {
-            await api.put("/profile", values);
+            await profileService.updateProfile(values);
+            toast.success("Profile updated successfully");
             onUpdate();
         } catch (err: any) {
-            console.error(err);
-            setError(err.response?.data?.message || "Failed to update profile");
+            toast.error(err.response?.data?.message || "Failed to update profile");
         }
     }
 
