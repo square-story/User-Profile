@@ -145,4 +145,17 @@ export class AuthController {
             next(error);
         }
     };
+
+    validateResetToken = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { token } = req.query;
+            if (!token || typeof token !== "string") {
+                throw new Error("Token is required");
+            }
+            await this.authService.validateResetToken(token);
+            res.status(200).json({ success: true, message: "Token is valid" });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
