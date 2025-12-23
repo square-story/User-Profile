@@ -106,4 +106,16 @@ export class AuthController {
             next(error);
         }
     };
+
+    changePassword = async (req: AuthRequest, res: Response, next: NextFunction) => {
+        try {
+            const { currentPassword, newPassword } = req.body;
+            const userId = (req as AuthRequest).user?.userId;
+            if (!userId) throw new Error("User not found");
+            await this.authService.changePassword(userId, currentPassword, newPassword);
+            res.status(200).json({ success: true, message: "Password has been changed successfully." });
+        } catch (error) {
+            next(error);
+        }
+    };
 }

@@ -16,8 +16,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import api from "@/lib/api";
+import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/useAuthStore";
+import { toast } from "sonner";
 
 const formSchema = z.object({
     email: z.string().email(),
@@ -38,15 +39,13 @@ export function LoginForm() {
     });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        setError(null);
         try {
-            const response = await api.post("/auth/login", values);
-            const { accessToken, user } = response.data.data;
+            const { accessToken, user } = await authService.login(values.email, values.password);
             login(accessToken, user);
+            toast.success("Login successful");
             router.push("/profile");
         } catch (err: any) {
-            console.error(err);
-            setError(err.response?.data?.message || "Something went wrong");
+            toast.error(err.response?.data?.message || "Something went wrong");
         }
     }
 

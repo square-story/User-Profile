@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import api from "@/lib/api";
+import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/useAuthStore";
 
 const formSchema = z.object({
@@ -53,8 +53,7 @@ export function RegisterForm() {
                 }
             };
 
-            const response = await api.post("/auth/register", payload);
-            const { accessToken, user } = response.data.data;
+            const { accessToken, user } = await authService.register(payload);
             login(accessToken, user);
             router.push("/profile");
         } catch (err: any) {

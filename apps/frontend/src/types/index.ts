@@ -9,6 +9,15 @@ export interface IUser {
     };
 }
 
+export interface IRegister {
+    email: string;
+    passwordHash: string;
+    profile: {
+        firstName: string;
+        lastName: string;
+    };
+}
+
 export interface AuthState {
     user: IUser | null;
     isAuthenticated: boolean;
@@ -16,3 +25,9 @@ export interface AuthState {
     login: (accessToken: string, user: IUser) => void;
     logout: () => void;
 }
+
+export interface IPassword {
+    currentPassword: string;
+    newPassword: string;
+}
+

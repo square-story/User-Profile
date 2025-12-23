@@ -5,20 +5,30 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuthStore } from "@/store/useAuthStore";
-import api from "@/lib/api";
 import { EditProfileForm } from "@/features/profile/edit-profile-form";
 import { NotificationList } from "@/features/notifications/notification-list";
+import { IPassword } from "@/types";
+import ChangePasswordForm from "@/features/change-password/change-password-form";
+import { profileService } from "@/services/profile.service";
+import { authService } from "@/services/auth.service";
 
 export default function ProfilePage() {
     const { user, logout } = useAuthStore();
     const router = useRouter();
     const [profile, setProfile] = React.useState<any>(null);
+    const [password, setPassword] = React.useState<IPassword>({
+        currentPassword: "",
+        newPassword: ""
+    });
 
-    const fetchProfile = React.useCallback(() => {
+    const fetchProfile = React.useCallback(async () => {
         if (!user) return;
-        api.get("/profile")
-            .then((res) => setProfile(res.data.data))
-            .catch((err) => console.error(err));
+        try {
+            const data = await profileService.getProfile();
+            setProfile(data);
+        } catch (err) {
+            console.error(err);
+        }
     }, [user]);
 
     React.useEffect(() => {
@@ -27,7 +37,7 @@ export default function ProfilePage() {
 
     const handleLogout = async () => {
         try {
-            await api.post("/auth/logout");
+            await authService.logout();
             logout();
             router.push("/login");
         } catch (err) {
@@ -61,6 +71,9 @@ export default function ProfilePage() {
 
                 <div>
                     <NotificationList />
+                </div>
+                <div>
+                    <ChangePasswordForm />
                 </div>
             </div>
         </div>

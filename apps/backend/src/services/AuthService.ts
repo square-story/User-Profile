@@ -114,4 +114,19 @@ export class AuthService implements IAuthService {
         const passwordHash = await AuthUtils.hashPassword(newPassword);
         await this.userRepository.updatePassword(user._id as unknown as string, passwordHash);
     }
+
+    async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+        const user = await this.userRepository.findById(userId);
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        const isMatch = await AuthUtils.comparePassword(currentPassword, user.passwordHash);
+        if (!isMatch) {
+            throw new Error("Invalid current password");
+        }
+
+        const passwordHash = await AuthUtils.hashPassword(newPassword);
+        await this.userRepository.updatePassword(userId, passwordHash);
+    }
 }
