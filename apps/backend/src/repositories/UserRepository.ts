@@ -30,4 +30,23 @@ export class UserRepository implements IUserRepository {
     async updateRefreshToken(id: string, refreshToken: string | null): Promise<void> {
         await User.findByIdAndUpdate(id, { refreshToken });
     }
+
+    async saveResetToken(id: string, token: string, expires: Date): Promise<void> {
+        await User.findByIdAndUpdate(id, { resetPasswordToken: token, resetPasswordExpires: expires });
+    }
+
+    async findByResetToken(token: string): Promise<IUser | null> {
+        return await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: new Date() },
+        });
+    }
+
+    async updatePassword(id: string, passwordHash: string): Promise<void> {
+        await User.findByIdAndUpdate(id, {
+            passwordHash,
+            resetPasswordToken: undefined,
+            resetPasswordExpires: undefined,
+        });
+    }
 }

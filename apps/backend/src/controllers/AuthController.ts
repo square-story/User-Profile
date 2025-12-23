@@ -86,4 +86,24 @@ export class AuthController {
             next(error);
         }
     }
+
+    forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { email } = req.body;
+            await this.authService.forgotPassword(email);
+            res.status(200).json({ success: true, message: "If that email exists, a reset link has been sent." });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { token, newPassword } = req.body;
+            await this.authService.resetPassword(token, newPassword);
+            res.status(200).json({ success: true, message: "Password has been reset successfully." });
+        } catch (error) {
+            next(error);
+        }
+    };
 }

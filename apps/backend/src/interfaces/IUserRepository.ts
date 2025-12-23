@@ -7,4 +7,7 @@ export interface IUserRepository {
     findById(id: string): Promise<IUser | null>;
     updateProfile(id: string, data: Partial<IUser["profile"]>): Promise<IUser | null>;
     updateRefreshToken(id: string, refreshToken: string | null): Promise<void>;
+    saveResetToken(id: string, token: string, expires: Date): Promise<void>;
+    findByResetToken(token: string): Promise<IUser | null>;
+    updatePassword(id: string, passwordHash: string): Promise<void>;
 }

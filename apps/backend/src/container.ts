@@ -5,6 +5,13 @@ import { TYPES } from "./constants/types";
 import { AuthController } from "./controllers/AuthController";
 import { ProfileController } from "./controllers/ProfileController";
 import { NotificationController } from "./controllers/NotificationController";
+import { IAdminRepository } from "./interfaces/IAdminRepository";
+import { AdminRepository } from "./repositories/AdminRepository";
+import { IAdminService } from "./interfaces/IAdminService";
+import { AdminService } from "./services/AdminService";
+import { AdminController } from "./controllers/AdminController";
+import { IEmailService } from "./interfaces/IEmailService";
+import { NodemailerEmailService } from "./services/NodemailerEmailService";
 
 // Import Services
 import { AuthService } from "./services/AuthService";
@@ -32,6 +39,12 @@ container.bind<INotificationRepository>(TYPES.NotificationRepository).to(Notific
 container.bind<IAuthService>(TYPES.AuthService).to(AuthService);
 container.bind<IProfileService>(TYPES.ProfileService).to(ProfileService);
 container.bind<INotificationService>(TYPES.NotificationService).to(NotificationService);
+container.bind<IEmailService>(TYPES.EmailService).to(NodemailerEmailService);
+
+// Admin Module Bindings
+container.bind<IAdminRepository>(TYPES.AdminRepository).to(AdminRepository);
+container.bind<IAdminService>(TYPES.AdminService).to(AdminService);
+container.bind<AdminController>(TYPES.AdminController).to(AdminController);
 
 // Controllers
 container.bind<AuthController>(TYPES.AuthController).to(AuthController);

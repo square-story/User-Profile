@@ -7,9 +7,14 @@ import { IUser } from "../models/User";
 import { AuthUtils } from "../utils/AuthUtils";
 import { UserPayload } from "../interfaces/UserPayload";
 
+import { IEmailService } from "../interfaces/IEmailService";
+
 @injectable()
 export class AuthService implements IAuthService {
-    constructor(@inject(TYPES.UserRepository) private userRepository: IUserRepository) { }
+    constructor(
+        @inject(TYPES.UserRepository) private userRepository: IUserRepository,
+        @inject(TYPES.EmailService) private emailService: IEmailService
+    ) { }
 
     async register(data: CreateUserDto): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
         const existingUser = await this.userRepository.findByEmail(data.email);
@@ -31,6 +36,9 @@ export class AuthService implements IAuthService {
 
         await this.userRepository.updateRefreshToken(newUser._id as unknown as string, refreshToken);
 
+        // Send Email (Async, non-blocking)
+        this.emailService.sendVerificationEmail(newUser.email, newUser.profile.firstName, "mock-verification-token");
+
         return { accessToken, refreshToken, user: newUser };
     }
 
@@ -38,6 +46,10 @@ export class AuthService implements IAuthService {
         const user = await this.userRepository.findByEmail(credentials.email);
         if (!user) {
             throw new Error("Invalid credentials");
+        }
+
+        if (user.status !== "active") {
+            throw new Error("Your account has been deactivated. Please contact support.");
         }
 
         const isMatch = await AuthUtils.comparePassword(credentials.passwordHash, user.passwordHash);
@@ -50,6 +62,9 @@ export class AuthService implements IAuthService {
         const refreshToken = AuthUtils.generateRefreshToken(payload);
 
         await this.userRepository.updateRefreshToken(user._id as unknown as string, refreshToken);
+
+        // Send Email (Async, non-blocking)
+        this.emailService.sendLoginAlertEmail(user.email, user.profile.firstName, "Unknown Device (IP Tracking Not Implemented)");
 
         return { accessToken, refreshToken, user };
     }
@@ -73,5 +88,30 @@ export class AuthService implements IAuthService {
 
     async logout(userId: string): Promise<void> {
         await this.userRepository.updateRefreshToken(userId, null);
+    }
+
+    async forgotPassword(email: string): Promise<void> {
+        const user = await this.userRepository.findByEmail(email);
+        if (!user) {
+            // Do not reveal if user exists
+            return;
+        }
+
+        // Generate simple random token
+        const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        const expires = new Date(Date.now() + 3600000); // 1 hour
+
+        await this.userRepository.saveResetToken(user._id as unknown as string, resetToken, expires);
+        await this.emailService.sendPasswordResetEmail(user.email, user.profile.firstName, resetToken);
+    }
+
+    async resetPassword(token: string, newPassword: string): Promise<void> {
+        const user = await this.userRepository.findByResetToken(token);
+        if (!user) {
+            throw new Error("Invalid or expired reset token");
+        }
+
+        const passwordHash = await AuthUtils.hashPassword(newPassword);
+        await this.userRepository.updatePassword(user._id as unknown as string, passwordHash);
     }
 }

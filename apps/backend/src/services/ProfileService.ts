@@ -5,11 +5,14 @@ import { INotificationService } from "../interfaces/INotificationService";
 import { TYPES } from "../constants/types";
 import { IUserProfile } from "../models/User";
 
+import { IEmailService } from "../interfaces/IEmailService";
+
 @injectable()
 export class ProfileService implements IProfileService {
     constructor(
         @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-        @inject(TYPES.NotificationService) private notificationService: INotificationService
+        @inject(TYPES.NotificationService) private notificationService: INotificationService,
+        @inject(TYPES.EmailService) private emailService: IEmailService
     ) { }
 
     async getProfile(userId: string): Promise<IUserProfile> {
@@ -28,6 +31,9 @@ export class ProfileService implements IProfileService {
 
         // Trigger notification
         await this.notificationService.createNotification(userId, "Your profile has been updated successfully.");
+
+        // Send Email
+        this.emailService.sendProfileUpdateEmail(updatedUser.email, updatedUser.profile.firstName);
 
         return updatedUser.profile;
     }
