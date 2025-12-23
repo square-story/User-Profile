@@ -29,6 +29,7 @@ export function LoginForm() {
     const router = useRouter();
     const { login } = useAuthStore();
     const [error, setError] = React.useState<string | null>(null);
+    const [loading, setLoading] = React.useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -40,12 +41,15 @@ export function LoginForm() {
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
+            setLoading(true);
             const { accessToken, user } = await authService.login(values.email, values.password);
             login(accessToken, user);
             toast.success("Login successful");
             router.push("/profile");
         } catch (err: any) {
             toast.error(err.response?.data?.message || "Something went wrong");
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -90,7 +94,7 @@ export function LoginForm() {
                             )}
                         />
                         {error && <p className="text-red-500 text-sm">{error}</p>}
-                        <Button type="submit" className="w-full">Login</Button>
+                        <Button type="submit" disabled={loading} className="w-full">{loading ? "Logging in..." : "Login"}</Button>
                     </form>
                 </Form>
             </CardContent>

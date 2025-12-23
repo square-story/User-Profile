@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authService } from "@/services/auth.service";
 import { toast } from "sonner";
+import React from "react";
 
 const formSchema = z.object({
     currentPassword: z.string().min(6, "Current password is required"),
@@ -27,6 +28,7 @@ const formSchema = z.object({
 });
 
 function ChangePasswordForm() {
+    const [loading, setLoading] = React.useState(false);
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -38,6 +40,7 @@ function ChangePasswordForm() {
 
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
         try {
+            setLoading(true);
             await authService.changePassword({
                 currentPassword: data.currentPassword,
                 newPassword: data.newPassword
@@ -46,6 +49,8 @@ function ChangePasswordForm() {
             form.reset();
         } catch (err: any) {
             toast.error(err.response?.data?.message || "Failed to change password");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -96,7 +101,7 @@ function ChangePasswordForm() {
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit">Change Password</Button>
+                        <Button type="submit" disabled={loading} className="w-full">{loading ? "Changing password..." : "Change Password"}</Button>
                     </form>
                 </Form>
             </CardContent>

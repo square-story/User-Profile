@@ -28,8 +28,8 @@ const formSchema = z.object({
 
 export function RegisterForm() {
     const router = useRouter();
-    const { login } = useAuthStore();
     const [error, setError] = React.useState<string | null>(null);
+    const [loading, setLoading] = React.useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -43,10 +43,11 @@ export function RegisterForm() {
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setError(null);
+        setLoading(true);
         try {
             const payload = {
                 email: values.email,
-                passwordHash: values.password, // Backend expects passwordHash as raw password (per simple implementation)
+                passwordHash: values.password,
                 profile: {
                     firstName: values.firstName,
                     lastName: values.lastName
@@ -58,6 +59,8 @@ export function RegisterForm() {
         } catch (err: any) {
             console.error(err);
             setError(err.response?.data?.message || "Something went wrong");
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -125,7 +128,7 @@ export function RegisterForm() {
                             )}
                         />
                         {error && <p className="text-red-500 text-sm">{error}</p>}
-                        <Button type="submit" className="w-full">Register</Button>
+                        <Button type="submit" disabled={loading} className="w-full">{loading ? "Registering..." : "Register"}</Button>
                     </form>
                 </Form>
             </CardContent>
