@@ -26,6 +26,7 @@ const formSchema = z.object({
 
 export function EditProfileForm({ initialData, onUpdate }: { initialData: any, onUpdate: () => void }) {
     const [error, setError] = React.useState<string | null>(null);
+    const [loading, setLoading] = React.useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -38,11 +39,14 @@ export function EditProfileForm({ initialData, onUpdate }: { initialData: any, o
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
+            setLoading(true);
             await profileService.updateProfile(values);
             toast.success("Profile updated successfully");
             onUpdate();
         } catch (err: any) {
             toast.error(err.response?.data?.message || "Failed to update profile");
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -53,7 +57,7 @@ export function EditProfileForm({ initialData, onUpdate }: { initialData: any, o
             </CardHeader>
             <CardContent>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" >
                         <div className="flex gap-2">
                             <FormField
                                 control={form.control}
@@ -96,7 +100,7 @@ export function EditProfileForm({ initialData, onUpdate }: { initialData: any, o
                             )}
                         />
                         {error && <p className="text-red-500 text-sm">{error}</p>}
-                        <Button type="submit">Save Changes</Button>
+                        <Button type="submit" disabled={loading}>{loading ? "Saving changes..." : "Save Changes"}</Button>
                     </form>
                 </Form>
             </CardContent>
