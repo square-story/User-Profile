@@ -4,6 +4,8 @@ export interface IUserProfile {
     firstName: string;
     lastName: string;
     bio?: string;
+    avatarUrl?: string;
+    avatarPublicId?: string;
 }
 
 export interface IUser extends Document {
@@ -33,6 +35,8 @@ const UserSchema: Schema = new Schema(
             firstName: { type: String, required: true },
             lastName: { type: String, required: true },
             bio: { type: String },
+            avatarUrl: { type: String },
+            avatarPublicId: { type: String },
         },
         refreshToken: { type: String },
         resetPasswordToken: { type: String },

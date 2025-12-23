@@ -6,13 +6,15 @@ import { TYPES } from "../constants/types";
 import { IUserProfile } from "../models/User";
 
 import { IEmailService } from "../interfaces/IEmailService";
+import { CloudinaryService } from "./CloudinaryService";
 
 @injectable()
 export class ProfileService implements IProfileService {
     constructor(
         @inject(TYPES.UserRepository) private userRepository: IUserRepository,
         @inject(TYPES.NotificationService) private notificationService: INotificationService,
-        @inject(TYPES.EmailService) private emailService: IEmailService
+        @inject(TYPES.EmailService) private emailService: IEmailService,
+        @inject(TYPES.CloudinaryService) private cloudinaryService: CloudinaryService
     ) { }
 
     async getProfile(userId: string): Promise<IUserProfile> {
@@ -34,6 +36,33 @@ export class ProfileService implements IProfileService {
 
         // Send Email
         this.emailService.sendProfileUpdateEmail(updatedUser.email, updatedUser.profile.firstName);
+
+        return updatedUser.profile;
+    }
+
+    async uploadAvatar(userId: string, file: Express.Multer.File): Promise<IUserProfile> {
+        const user = await this.userRepository.findById(userId);
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        // Delete old avatar if exists
+        if (user.profile.avatarPublicId) {
+            await this.cloudinaryService.deleteImage(user.profile.avatarPublicId);
+        }
+
+        // Upload new avatar
+        const { url, publicId } = await this.cloudinaryService.uploadImage(file.buffer);
+
+        // Update user profile
+        const updatedUser = await this.userRepository.updateProfile(userId, {
+            avatarUrl: url,
+            avatarPublicId: publicId,
+        });
+
+        if (!updatedUser) {
+            throw new Error("User not found after update");
+        }
 
         return updatedUser.profile;
     }

@@ -3,6 +3,7 @@ export interface IUser {
     email: string;
     role: "admin" | "user";
     profile: {
+        avatarUrl?: string;
         firstName: string;
         lastName: string;
         bio?: string;

@@ -20,9 +20,10 @@ export class UserRepository implements IUserRepository {
 
     async updateProfile(id: string, data: Partial<IUser["profile"]>): Promise<IUser | null> {
         const updateQuery: Record<string, any> = {};
-        if (data.firstName) updateQuery["profile.firstName"] = data.firstName;
-        if (data.lastName) updateQuery["profile.lastName"] = data.lastName;
-        if (data.bio) updateQuery["profile.bio"] = data.bio;
+        Object.keys(data).forEach((key) => {
+            updateQuery[`profile.${key}`] = (data as any)[key];
+        });
+
 
         return await User.findByIdAndUpdate(id, { $set: updateQuery }, { new: true });
     }
