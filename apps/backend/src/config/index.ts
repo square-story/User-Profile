@@ -11,4 +11,9 @@ export const config = {
     jwtRefreshExpiry: process.env.JWT_REFRESH_EXPIRY || "7d",
     env: process.env.NODE_ENV || "development",
     allowedOrigins: process.env.ALLOWED_ORIGINS || "http://localhost:3000",
+    cloudinary: {
+        cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+        apiKey: process.env.CLOUDINARY_API_KEY,
+        apiSecret: process.env.CLOUDINARY_API_SECRET,
+    },
 };

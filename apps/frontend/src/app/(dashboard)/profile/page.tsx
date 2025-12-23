@@ -12,6 +12,7 @@ import ChangePasswordForm from "@/features/change-password/change-password-form"
 import { profileService } from "@/services/profile.service";
 import { authService } from "@/services/auth.service";
 import { ProfileSkeleton } from "@/features/profile/profile-skeleton";
+import { AvatarUpload } from "@/components/avatar-upload";
 
 export default function ProfilePage() {
     const { user, logout } = useAuthStore();
@@ -50,6 +51,22 @@ export default function ProfilePage() {
                 <h1 className="text-3xl font-bold tracking-tight">User Profile</h1>
                 <Button variant="destructive" onClick={handleLogout}>Logout</Button>
             </div>
+
+            <Card className="mb-8">
+                <CardContent className="pt-6 flex flex-col md:flex-row items-center gap-8">
+                    <AvatarUpload
+                        currentAvatarUrl={profile.avatarUrl}
+                        firstName={profile.firstName}
+                        lastName={profile.lastName}
+                        onUploadSuccess={fetchProfile}
+                    />
+                    <div className="text-center md:text-left space-y-2 flex-1">
+                        <h2 className="text-2xl font-semibold">{profile.firstName} {profile.lastName}</h2>
+                        <p className="text-muted-foreground">{profile.bio || "No bio set"}</p>
+                        <p className="text-sm text-muted-foreground">{user?.email}</p>
+                    </div>
+                </CardContent>
+            </Card>
 
             <Tabs defaultValue="overview" className="space-y-4">
                 <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">

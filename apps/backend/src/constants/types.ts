@@ -8,6 +8,7 @@ export const TYPES = {
     ProfileService: Symbol.for("ProfileService"),
     NotificationService: Symbol.for("NotificationService"),
     EmailService: Symbol.for("EmailService"),
+    CloudinaryService: Symbol.for("CloudinaryService"),
 
     // Controllers
     AuthController: Symbol.for("AuthController"),

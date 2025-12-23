@@ -27,4 +27,18 @@ export class ProfileController {
             next(error);
         }
     };
+
+    uploadAvatar = async (req: AuthRequest, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user!.userId;
+            if (!req.file) {
+                res.status(400).json({ success: false, message: "No file uploaded" });
+                return;
+            }
+            const profile = await this.profileService.uploadAvatar(userId, req.file);
+            res.status(200).json({ success: true, data: profile });
+        } catch (error) {
+            next(error);
+        }
+    };
 }

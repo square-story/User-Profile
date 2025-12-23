@@ -17,6 +17,7 @@ import { NodemailerEmailService } from "./services/NodemailerEmailService";
 import { AuthService } from "./services/AuthService";
 import { ProfileService } from "./services/ProfileService";
 import { NotificationService } from "./services/NotificationService";
+import { CloudinaryService } from "./services/CloudinaryService";
 
 // Import Repositories
 import { UserRepository } from "./repositories/UserRepository";
@@ -40,6 +41,7 @@ container.bind<IAuthService>(TYPES.AuthService).to(AuthService);
 container.bind<IProfileService>(TYPES.ProfileService).to(ProfileService);
 container.bind<INotificationService>(TYPES.NotificationService).to(NotificationService);
 container.bind<IEmailService>(TYPES.EmailService).to(NodemailerEmailService);
+container.bind<CloudinaryService>(TYPES.CloudinaryService).to(CloudinaryService);
 
 // Admin Module Bindings
 container.bind<IAdminRepository>(TYPES.AdminRepository).to(AdminRepository);
