@@ -7,9 +7,7 @@ import { DataTableColumnHeader } from "@/components/data-table/data-table-column
 import { format } from "date-fns"
 import { IUser } from "@/types"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { MoreHorizontal } from "lucide-react"
+import { UserActions } from "./user-actions"
 
 export const columns: ColumnDef<IUser>[] = [
     {
@@ -137,28 +135,7 @@ export const columns: ColumnDef<IUser>[] = [
         },
     }, {
         id: "actions",
-        cell: function Cell({ row }) {
-            return (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Open menu</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem>View</DropdownMenuItem>
-                        <DropdownMenuItem variant="destructive">
-                            Delete
-                        </DropdownMenuItem>
-                        <DropdownMenuItem variant="destructive">
-                            {row.original.isActive ? "Deactivate" : "Activate"}
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            );
-        },
+        cell: ({ row }) => <UserActions user={row.original} />,
         size: 32,
     },
 ]
