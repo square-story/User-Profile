@@ -26,6 +26,10 @@ export class AdminRepository implements IAdminRepository {
         return await User.findByIdAndUpdate(userId, data, { new: true });
     }
 
+    async updateManyUsers(userIds: string[], updates: Partial<IUser>): Promise<void> {
+        await User.updateMany({ _id: { $in: userIds } }, { $set: updates });
+    }
+
     async createAuditLog(data: Partial<IAuditLog>): Promise<IAuditLog> {
         return await AuditLog.create(data);
     }

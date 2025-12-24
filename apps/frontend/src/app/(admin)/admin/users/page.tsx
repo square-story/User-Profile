@@ -12,6 +12,7 @@ import { DataTableFilterList } from "@/components/data-table/data-table-filter-l
 import { DataTableSortList } from "@/components/data-table/data-table-sort-list"
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton"
 import { Input } from "@/components/ui/input"
+import { UsersTableFloatingBar } from "./users-table-floating-bar"
 
 export default function UsersPage() {
     // URL State
@@ -87,7 +88,11 @@ export default function UsersPage() {
                     withPagination={true}
                 />
             ) : (
-                <DataTable table={table} className="border rounded-md p-4">
+                <DataTable
+                    table={table}
+                    className="border rounded-md p-4"
+                    actionBar={<UsersTableFloatingBar table={table} />}
+                >
                     <DataTableAdvancedToolbar table={table} className="p-4 border-b">
                         <div className="flex items-center gap-2">
                             <Input placeholder="Search users..." value={search} onChange={(e) => setSearch(e.target.value)} />

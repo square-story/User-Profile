@@ -9,6 +9,9 @@ export interface IAdminService {
     deactivateUser(adminId: string, userId: string): Promise<void>;
     reactivateUser(adminId: string, userId: string): Promise<void>;
 
+    bulkDeactivateUsers(adminId: string, userIds: string[]): Promise<void>;
+    bulkReactivateUsers(adminId: string, userIds: string[]): Promise<void>;
+
     getAuditLogs(params: any): Promise<{ logs: IAuditLog[]; total: number; page: number; limit: number; }>;
     getUserLoginHistory(userId: string): Promise<ILoginHistory[]>;
 

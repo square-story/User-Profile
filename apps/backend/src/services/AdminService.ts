@@ -131,6 +131,41 @@ export class AdminService implements IAdminService {
         });
     }
 
+    async bulkDeactivateUsers(adminId: string, userIds: string[]): Promise<void> {
+        if (!userIds || userIds.length === 0) return;
+
+        // Prevent self-deactivation if included
+        const filteredIds = userIds.filter(id => id !== adminId);
+
+        if (filteredIds.length === 0) {
+            throw new Error("Cannot deactivate your own account");
+        }
+
+        await this.adminRepository.updateManyUsers(filteredIds, { isActive: false, status: "inactive" });
+
+        await this.adminRepository.createAuditLog({
+            action: "BULK_DEACTIVATE",
+            resource: "User",
+            adminId: new mongoose.Types.ObjectId(adminId),
+            details: `Bulk deactivated ${filteredIds.length} users`,
+            changes: { userIds: filteredIds }
+        });
+    }
+
+    async bulkReactivateUsers(adminId: string, userIds: string[]): Promise<void> {
+        if (!userIds || userIds.length === 0) return;
+
+        await this.adminRepository.updateManyUsers(userIds, { isActive: true, status: "active" });
+
+        await this.adminRepository.createAuditLog({
+            action: "BULK_REACTIVATE",
+            resource: "User",
+            adminId: new mongoose.Types.ObjectId(adminId),
+            details: `Bulk reactivated ${userIds.length} users`,
+            changes: { userIds }
+        });
+    }
+
     async getAuditLogs(params: any): Promise<{ logs: IAuditLog[]; total: number; page: number; limit: number }> {
         const page = parseInt(params.page as string) || 1;
         const limit = parseInt(params.limit as string) || 20;

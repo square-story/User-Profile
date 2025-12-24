@@ -17,6 +17,10 @@ adminRouter.put("/users/:id", authMiddleware, adminMiddleware, adminController.u
 adminRouter.post("/users/:id/deactivate", authMiddleware, adminMiddleware, adminController.deactivateUser);
 adminRouter.post("/users/:id/reactivate", authMiddleware, adminMiddleware, adminController.reactivateUser);
 
+// Bulk Actions
+adminRouter.post("/users/bulk-deactivate", authMiddleware, adminMiddleware, adminController.bulkDeactivate);
+adminRouter.post("/users/bulk-reactivate", authMiddleware, adminMiddleware, adminController.bulkReactivate);
+
 // Logs & History
 adminRouter.get("/audit-logs", authMiddleware, adminMiddleware, adminController.getAuditLogs);
 adminRouter.get("/users/:id/history", authMiddleware, adminMiddleware, adminController.getUserLoginHistory);
