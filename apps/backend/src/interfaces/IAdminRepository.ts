@@ -17,4 +17,6 @@ export interface IAdminRepository {
     // Deprecated or can be removed if replaced by generalized methods above
     searchUsers(filters: any, page: number, limit: number): Promise<{ users: IUser[]; total: number }>;
     updateUserStatus(userId: string, status: "active" | "inactive"): Promise<IUser | null>;
+
+    updateManyUsers(userIds: string[], updates: Partial<IUser>): Promise<void>;
 }

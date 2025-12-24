@@ -83,6 +83,32 @@ export class AdminController {
     }
 
     /**
+     * Bulk Deactivate Users
+     */
+    bulkDeactivate = async (req: AuthRequest, res: Response, next: NextFunction) => {
+        try {
+            const { userIds } = req.body;
+            await this.adminService.bulkDeactivateUsers(req.user!.userId, userIds);
+            res.json({ success: true, message: "Users deactivated successfully" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
+     * Bulk Reactivate Users
+     */
+    bulkReactivate = async (req: AuthRequest, res: Response, next: NextFunction) => {
+        try {
+            const { userIds } = req.body;
+            await this.adminService.bulkReactivateUsers(req.user!.userId, userIds);
+            res.json({ success: true, message: "Users reactivated successfully" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
      * Get Audit Logs
      */
     getAuditLogs = async (req: Request, res: Response, next: NextFunction) => {

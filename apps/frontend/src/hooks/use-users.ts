@@ -63,3 +63,39 @@ export function useReactivateUser() {
         },
     });
 }
+
+export function useBulkDeactivateUser() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (userIds: string[]) => {
+            const res = await api.post(`/admin/users/bulk-deactivate`, { userIds });
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+            toast.success("Users deactivated successfully");
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || "Failed to deactivate users");
+        },
+    });
+}
+
+export function useBulkReactivateUser() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (userIds: string[]) => {
+            const res = await api.post(`/admin/users/bulk-reactivate`, { userIds });
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+            toast.success("Users reactivated successfully");
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || "Failed to reactivate users");
+        },
+    });
+}
