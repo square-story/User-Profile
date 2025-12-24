@@ -1,5 +1,6 @@
 "use client"
 
+
 import { useQuery, keepPreviousData } from "@tanstack/react-query"
 import { DataTable } from "@/components/data-table/data-table"
 import { columns } from "./columns"
@@ -13,6 +14,7 @@ import { DataTableSortList } from "@/components/data-table/data-table-sort-list"
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton"
 import { Input } from "@/components/ui/input"
 import { UsersTableFloatingBar } from "./users-table-floating-bar"
+import { useDebounce } from "@/hooks/use-debounce"
 
 export default function UsersPage() {
     // URL State
@@ -21,12 +23,15 @@ export default function UsersPage() {
 
     // Advanced Filters & Sorting
     const [sorting] = useQueryState("sort", getSortingStateParser(columns.map(c => c.id as string).filter(Boolean)).withDefault([]))
-    const [search, setSearch] = useQueryState("search", parseAsString.withDefault("").withOptions({ throttleMs: 500 }))
+    const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""))
     const [filters] = useQueryState("filters", getFiltersStateParser(columns.map(c => c.id as string).filter(Boolean)).withDefault([]))
+
+    // Debounced Search State
+    const debouncedSearch = useDebounce(search, 500)
 
     // Fetch Data
     const { data, isLoading } = useQuery({
-        queryKey: ["users", page, perPage, search, sorting, filters],
+        queryKey: ["users", page, perPage, debouncedSearch, sorting, filters],
         queryFn: async () => {
             // Map sorting state to backend params
             const sortParam = sorting?.map(s => `${s.id}:${s.desc ? "desc" : "asc"}`).join(",");
