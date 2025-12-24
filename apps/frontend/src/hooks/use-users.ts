@@ -28,6 +28,29 @@ export function useUpdateUser() {
     });
 }
 
+// Helper to update user status in cache
+const updateUserStatusInCache = (queryClient: any, userIds: string[], isActive: boolean) => {
+    queryClient.setQueriesData({ queryKey: ["users"] }, (oldData: any) => {
+        if (!oldData) return oldData;
+        // If data structure is { users: [...], total: ... }
+        if (oldData.users) {
+            return {
+                ...oldData,
+                users: oldData.users.map((user: IUser) =>
+                    userIds.includes(user.id) ? { ...user, isActive } : user
+                )
+            };
+        }
+        // If data structure is just array (unlikely given pagination)
+        if (Array.isArray(oldData)) {
+            return oldData.map((user: IUser) =>
+                userIds.includes(user.id) ? { ...user, isActive } : user
+            );
+        }
+        return oldData;
+    });
+};
+
 export function useDeactivateUser() {
     const queryClient = useQueryClient();
 
@@ -36,12 +59,20 @@ export function useDeactivateUser() {
             const res = await api.post(`/admin/users/${id}/deactivate`);
             return res.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["users"] });
-            toast.success("User deactivated successfully");
+        onMutate: async (id) => {
+            await queryClient.cancelQueries({ queryKey: ["users"] });
+            const previousData = queryClient.getQueryData(["users"]);
+            updateUserStatusInCache(queryClient, [id], false);
+            return { previousData };
         },
-        onError: (error: any) => {
+        onError: (error: any, _, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["users"], context.previousData);
+            }
             toast.error(error.response?.data?.message || "Failed to deactivate user");
+        },
+        onSuccess: () => {
+            toast.success("User deactivated successfully");
         },
     });
 }
@@ -54,12 +85,20 @@ export function useReactivateUser() {
             const res = await api.post(`/admin/users/${id}/reactivate`);
             return res.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["users"] });
-            toast.success("User reactivated successfully");
+        onMutate: async (id) => {
+            await queryClient.cancelQueries({ queryKey: ["users"] });
+            const previousData = queryClient.getQueryData(["users"]);
+            updateUserStatusInCache(queryClient, [id], true);
+            return { previousData };
         },
-        onError: (error: any) => {
+        onError: (error: any, _, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["users"], context.previousData);
+            }
             toast.error(error.response?.data?.message || "Failed to reactivate user");
+        },
+        onSuccess: () => {
+            toast.success("User reactivated successfully");
         },
     });
 }
@@ -72,12 +111,20 @@ export function useBulkDeactivateUser() {
             const res = await api.post(`/admin/users/bulk-deactivate`, { userIds });
             return res.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["users"] });
-            toast.success("Users deactivated successfully");
+        onMutate: async (userIds) => {
+            await queryClient.cancelQueries({ queryKey: ["users"] });
+            const previousData = queryClient.getQueryData(["users"]);
+            updateUserStatusInCache(queryClient, userIds, false);
+            return { previousData };
         },
-        onError: (error: any) => {
+        onError: (error: any, _, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["users"], context.previousData);
+            }
             toast.error(error.response?.data?.message || "Failed to deactivate users");
+        },
+        onSuccess: () => {
+            toast.success("Users deactivated successfully");
         },
     });
 }
@@ -90,12 +137,20 @@ export function useBulkReactivateUser() {
             const res = await api.post(`/admin/users/bulk-reactivate`, { userIds });
             return res.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["users"] });
-            toast.success("Users reactivated successfully");
+        onMutate: async (userIds) => {
+            await queryClient.cancelQueries({ queryKey: ["users"] });
+            const previousData = queryClient.getQueryData(["users"]);
+            updateUserStatusInCache(queryClient, userIds, true);
+            return { previousData };
         },
-        onError: (error: any) => {
+        onError: (error: any, _, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["users"], context.previousData);
+            }
             toast.error(error.response?.data?.message || "Failed to reactivate users");
+        },
+        onSuccess: () => {
+            toast.success("Users reactivated successfully");
         },
     });
 }
