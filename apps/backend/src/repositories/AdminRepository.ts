@@ -2,49 +2,75 @@ import { injectable } from "inversify";
 import { IAdminRepository } from "../interfaces/IAdminRepository";
 import { User, IUser } from "../models/User";
 import { AuditLog, IAuditLog } from "../models/AuditLog";
+import { LoginHistory, ILoginHistory } from "../models/LoginHistory";
 
 @injectable()
 export class AdminRepository implements IAdminRepository {
+    async findAllUsers(query: any, sort: any, skip: number, limit: number): Promise<IUser[]> {
+        return await User.find(query)
+            .select("-passwordHash")
+            .sort(sort)
+            .skip(skip)
+            .limit(limit);
+    }
+
+    async countUsers(query: any): Promise<number> {
+        return await User.countDocuments(query);
+    }
+
+    async findUserById(userId: string): Promise<IUser | null> {
+        return await User.findById(userId).select("-passwordHash");
+    }
+
+    async updateUser(userId: string, data: Partial<IUser>): Promise<IUser | null> {
+        return await User.findByIdAndUpdate(userId, data, { new: true });
+    }
+
+    async createAuditLog(data: Partial<IAuditLog>): Promise<IAuditLog> {
+        return await AuditLog.create(data);
+    }
+
+    async findAllAuditLogs(query: any, sort: any, skip: number, limit: number): Promise<IAuditLog[]> {
+        return await AuditLog.find(query)
+            .populate("adminId", "email profile.firstName profile.lastName")
+            .sort(sort)
+            .skip(skip)
+            .limit(limit);
+    }
+
+    async countAuditLogs(query: any): Promise<number> {
+        return await AuditLog.countDocuments(query);
+    }
+
+    async findLoginHistory(userId: string, limit: number): Promise<ILoginHistory[]> {
+        return await LoginHistory.find({ userId })
+            .sort({ loginAt: -1 })
+            .limit(limit);
+    }
+
+    // Keeping these for interface compatibility until refactor is complete, forwarding to new methods
     async searchUsers(filters: any, page: number, limit: number): Promise<{ users: IUser[]; total: number }> {
-        const query: any = {};
-        if (filters.email) {
-            query.email = { $regex: filters.email, $options: "i" };
-        }
-        if (filters.role) {
-            query.role = filters.role;
-        }
-        if (filters.status) {
-            query.status = filters.status;
-        }
-
+        // This legacy method is a bit tricky to map perfectly without logic, 
+        // but we will rely on findAllUsers in the service mostly.
+        // Implementing strict dummy or just forwarding if simpler.
         const skip = (page - 1) * limit;
-        const [users, total] = await Promise.all([
-            User.find(query).select("-passwordHash").skip(skip).limit(limit).sort({ createdAt: -1 }),
-            User.countDocuments(query),
-        ]);
-
+        const users = await this.findAllUsers({}, { createdAt: -1 }, skip, limit);
+        const total = await this.countUsers({});
         return { users, total };
     }
 
     async findById(userId: string): Promise<IUser | null> {
-        return await User.findById(userId);
+        return this.findUserById(userId);
     }
 
     async updateUserStatus(userId: string, status: "active" | "inactive"): Promise<IUser | null> {
-        return await User.findByIdAndUpdate(userId, { status }, { new: true });
-    }
-
-    async createAuditLog(action: string, adminId: string, targetUserId?: string, details?: string): Promise<void> {
-        await AuditLog.create({ action, adminId, targetUserId, details });
+        return this.updateUser(userId, { status });
     }
 
     async getAuditLogs(page: number, limit: number): Promise<{ logs: IAuditLog[]; total: number }> {
         const skip = (page - 1) * limit;
-        const [logs, total] = await Promise.all([
-            AuditLog.find().populate("adminId", "email").populate("targetUserId", "email").skip(skip).limit(limit).sort({ createdAt: -1 }),
-            AuditLog.countDocuments(),
-        ]);
-
+        const logs = await this.findAllAuditLogs({}, { createdAt: -1 }, skip, limit);
+        const total = await this.countAuditLogs({});
         return { logs, total };
     }
 }

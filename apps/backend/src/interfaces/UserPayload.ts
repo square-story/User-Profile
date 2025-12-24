@@ -2,5 +2,5 @@
 export interface UserPayload {
     userId: string;
     email: string;
-    role: "admin" | "user";
+    role: "admin" | "user" | "moderator";
 }
