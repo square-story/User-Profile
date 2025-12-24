@@ -11,7 +11,8 @@ export interface IUserProfile {
 export interface IUser extends Document {
     email: string;
     passwordHash: string;
-    role: "admin" | "user";
+    role: "admin" | "user" | "moderator";
+    isActive: boolean;
     status: "active" | "inactive";
     profile: IUserProfile;
     refreshToken?: string;
@@ -29,7 +30,8 @@ const UserSchema: Schema = new Schema(
     {
         email: { type: String, required: true, unique: true },
         passwordHash: { type: String, required: true },
-        role: { type: String, enum: ["admin", "user"], default: "user" },
+        role: { type: String, enum: ["admin", "user", "moderator"], default: "user" },
+        isActive: { type: Boolean, default: true },
         status: { type: String, enum: ["active", "inactive"], default: "inactive" },
         profile: {
             firstName: { type: String, required: true },

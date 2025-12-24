@@ -1,18 +1,24 @@
 import { Router } from "express";
+import { authMiddleware } from "../middlewares/authMiddleware";
+import { adminMiddleware } from "../middlewares/adminMiddleware";
 import { container } from "../container";
 import { TYPES } from "../constants/types";
 import { AdminController } from "../controllers/AdminController";
-import { authMiddleware } from "../middlewares/authMiddleware";
-import { adminMiddleware } from "../middlewares/adminMiddleware";
 
 const adminRouter = Router();
 const adminController = container.get<AdminController>(TYPES.AdminController);
 
-adminRouter.use(authMiddleware);
-adminRouter.use(adminMiddleware);
+// User Management
+adminRouter.get("/users", authMiddleware, adminMiddleware, adminController.getAllUsers);
+adminRouter.get("/users/:id", authMiddleware, adminMiddleware, adminController.getUserById);
+adminRouter.put("/users/:id", authMiddleware, adminMiddleware, adminController.updateUser);
 
-adminRouter.get("/users", adminController.getUsers);
-adminRouter.patch("/users/:userId/status", adminController.toggleStatus);
-adminRouter.get("/audit-logs", adminController.getAuditLogs);
+// User Actions
+adminRouter.post("/users/:id/deactivate", authMiddleware, adminMiddleware, adminController.deactivateUser);
+adminRouter.post("/users/:id/reactivate", authMiddleware, adminMiddleware, adminController.reactivateUser);
+
+// Logs & History
+adminRouter.get("/audit-logs", authMiddleware, adminMiddleware, adminController.getAuditLogs);
+adminRouter.get("/users/:id/history", authMiddleware, adminMiddleware, adminController.getUserLoginHistory);
 
 export default adminRouter;

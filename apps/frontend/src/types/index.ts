@@ -2,6 +2,7 @@ export interface IUser {
     _id: string;
     email: string;
     role: "admin" | "user";
+    isActive?: boolean;
     profile: {
         avatarUrl?: string;
         firstName: string;
@@ -30,5 +31,26 @@ export interface AuthState {
 export interface IPassword {
     currentPassword: string;
     newPassword: string;
+}
+
+export interface IAuditLog {
+    _id: string;
+    action: string;
+    adminId: IUser | string;
+    resource: string;
+    targetUserId?: string;
+    ipAddress?: string;
+    userAgent?: string;
+    details?: string;
+    createdAt: string;
+}
+
+export interface ILoginHistory {
+    _id: string;
+    userId: string;
+    ipAddress: string;
+    deviceInfo?: string;
+    sessionDuration?: number;
+    loginAt: string;
 }
 

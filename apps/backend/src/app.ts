@@ -10,8 +10,6 @@ import adminRouter from "./routes/adminRoutes";
 import { config } from "./config";
 
 const app = express();
-
-// Middlewares
 app.use(helmet());
 app.use(cors({ origin: config.allowedOrigins, credentials: true }));
 app.use(express.json());
