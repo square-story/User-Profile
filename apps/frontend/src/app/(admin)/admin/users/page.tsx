@@ -1,18 +1,15 @@
 "use client"
 
-import * as React from "react"
 import { useQuery, keepPreviousData } from "@tanstack/react-query"
 import { DataTable } from "@/components/data-table/data-table"
 import { columns } from "./columns"
 import { useDataTable } from "@/hooks/use-data-table"
-import { DataTablePagination } from "@/components/data-table/data-table-pagination"
 import api from "@/lib/api"
 import { parseAsInteger, useQueryState, parseAsString } from "nuqs"
 import { getSortingStateParser, getFiltersStateParser } from "@/lib/parsers"
 import { DataTableAdvancedToolbar } from "@/components/data-table/data-table-advanced-toolbar"
 import { DataTableFilterList } from "@/components/data-table/data-table-filter-list"
 import { DataTableSortList } from "@/components/data-table/data-table-sort-list"
-import { DataTableFilterMenu } from "@/components/data-table/data-table-filter-menu"
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton"
 import { Input } from "@/components/ui/input"
 
