@@ -116,7 +116,7 @@ export default function UserDetailPage() {
                     </CardHeader>
                     <CardContent className="space-y-2">
                         <div className="grid grid-cols-2 gap-1 text-sm">
-                            <span className="font-medium text-muted-foreground">ID:</span> <span>{user._id}</span>
+                            <span className="font-medium text-muted-foreground">ID:</span> <span>{user.id}</span>
                             <span className="font-medium text-muted-foreground">Email:</span> <span>{user.email}</span>
                             <span className="font-medium text-muted-foreground">Role:</span> <span className="capitalize">{user.role}</span>
                             <span className="font-medium text-muted-foreground">Created At:</span> <span>{new Date(user.createdAt).toLocaleDateString()}</span>

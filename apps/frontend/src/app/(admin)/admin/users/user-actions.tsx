@@ -82,7 +82,7 @@ export function UserActions({ user }: UserActionsProps) {
 
     const onSubmit = (values: z.infer<typeof formSchema>) => {
         updateUser(
-            { id: user._id, data: values },
+            { id: user.id, data: values },
             {
                 onSuccess: () => {
                     setOpenEdit(false);
@@ -93,9 +93,9 @@ export function UserActions({ user }: UserActionsProps) {
 
     const handleToggleStatus = () => {
         if (user.isActive) {
-            deactivateUser(user._id);
+            deactivateUser(user.id);
         } else {
-            reactivateUser(user._id);
+            reactivateUser(user.id);
         }
     };
 
@@ -240,7 +240,7 @@ export function UserActions({ user }: UserActionsProps) {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <h4 className="text-sm font-medium text-muted-foreground mb-1">User ID</h4>
-                                    <p className="text-sm font-mono truncate" title={user._id}>{user._id}</p>
+                                    <p className="text-sm font-mono truncate" title={user.id}>{user.id}</p>
                                 </div>
                             </div>
 
