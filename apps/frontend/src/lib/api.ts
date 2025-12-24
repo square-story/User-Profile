@@ -24,6 +24,14 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+
+        // Handle Account Deactivation (403)
+        if (error.response?.status === 403) {
+            useAuthStore.getState().logout();
+            location.href = "/login";
+            return Promise.reject(error);
+        }
+
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             console.log("Refreshing token...");

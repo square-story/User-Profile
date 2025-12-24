@@ -166,6 +166,10 @@ export class AuthService implements IAuthService {
             throw new Error("Invalid refresh token");
         }
 
+        if (user.status !== "active") {
+            throw new Error("Your account has been deactivated");
+        }
+
         const newPayload: UserPayload = { userId: user._id as unknown as string, email: user.email, role: user.role };
         const newAccessToken = AuthUtils.generateAccessToken(newPayload);
         const newRefreshToken = AuthUtils.generateRefreshToken(newPayload);
