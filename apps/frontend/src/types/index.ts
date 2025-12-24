@@ -1,5 +1,5 @@
 export interface IUser {
-    _id: string;
+    id: string;
     email: string;
     role: "admin" | "user";
     isActive?: boolean;

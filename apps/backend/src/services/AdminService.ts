@@ -7,12 +7,14 @@ import { IAuditLog } from "../models/AuditLog";
 import { ILoginHistory } from "../models/LoginHistory";
 import mongoose from "mongoose";
 
+import { UserResponseDTO } from "../dtos/UserDTO";
+import { UserMapper } from "../mappers/UserMapper";
+
 @injectable()
 export class AdminService implements IAdminService {
     constructor(@inject(TYPES.AdminRepository) private adminRepository: IAdminRepository) { }
 
-    async getUsers(params: any): Promise<{ users: IUser[]; total: number; page: number; limit: number }> {
-        console.log('params:', params)
+    async getUsers(params: any): Promise<{ users: UserResponseDTO[]; total: number; page: number; limit: number }> {
         const page = parseInt(params.page as string) || 1;
         const limit = parseInt(params.limit as string) || 10;
         const skip = (page - 1) * limit;
@@ -48,14 +50,15 @@ export class AdminService implements IAdminService {
             this.adminRepository.countUsers(query)
         ]);
 
-        return { users, total, page, limit };
+        return { users: UserMapper.toDTOs(users), total, page, limit };
     }
 
-    async getUserById(userId: string): Promise<IUser | null> {
-        return await this.adminRepository.findUserById(userId);
+    async getUserById(userId: string): Promise<UserResponseDTO | null> {
+        const user = await this.adminRepository.findUserById(userId);
+        return user ? UserMapper.toDTO(user) : null;
     }
 
-    async updateUser(adminId: string, userId: string, updateData: any): Promise<IUser> {
+    async updateUser(adminId: string, userId: string, updateData: any): Promise<UserResponseDTO> {
         const user = await this.adminRepository.findUserById(userId);
         if (!user) throw new Error("User not found");
 
@@ -79,7 +82,7 @@ export class AdminService implements IAdminService {
             changes: updateData
         });
 
-        return updatedUser;
+        return UserMapper.toDTO(updatedUser);
     }
 
     async deactivateUser(adminId: string, userId: string): Promise<void> {
@@ -137,22 +140,22 @@ export class AdminService implements IAdminService {
     }
 
     // Deprecated / Backwards Compat
-    async searchUsers(filters: any, page: number, limit: number): Promise<{ users: IUser[]; total: number }> {
+    async searchUsers(filters: any, page: number, limit: number): Promise<{ users: UserResponseDTO[]; total: number }> {
         const res = await this.getUsers({ ...filters, page, limit });
         return { users: res.users, total: res.total };
     }
 
-    async toggleUserStatus(adminId: string, userId: string): Promise<IUser> {
+    async toggleUserStatus(adminId: string, userId: string): Promise<UserResponseDTO> {
         // Simple toggle implementation mapping to deactivate/reactivate logic
-        const user = await this.getUserById(userId);
+        const user = await this.adminRepository.findUserById(userId);
         if (!user) throw new Error("User not found");
 
-        if (user.status === "active") {
+        if (user.isActive) {
             await this.deactivateUser(adminId, userId);
-            return (await this.getUserById(userId))!;
         } else {
             await this.reactivateUser(adminId, userId);
-            return (await this.getUserById(userId))!;
         }
+        const updated = await this.adminRepository.findUserById(userId);
+        return UserMapper.toDTO(updated!);
     }
 }
