@@ -19,7 +19,7 @@ export class AdminService implements IAdminService {
         const limit = parseInt(params.limit as string) || 10;
         const skip = (page - 1) * limit;
 
-        const { search, role, status, sortBy, order } = params;
+        const { search, role, status, sort } = params;
         const query: any = {};
 
         if (search) {
@@ -39,9 +39,23 @@ export class AdminService implements IAdminService {
         }
 
         const sortOptions: any = {};
-        if (sortBy) {
-            sortOptions[sortBy as string] = order === "asc" ? 1 : -1;
-        } else {
+        if (sort) {
+            const sortFields = Array.isArray(sort) ? sort : sort.split(',');
+            sortFields.forEach((fieldStr: string) => {
+                const [field, order] = fieldStr.split(':');
+                if (field) {
+                    const sortOrder = order === 'desc' ? -1 : 1;
+                    // Map aliases
+                    let dbField = field;
+                    if (field === 'user') dbField = 'profile.firstName';
+
+                    sortOptions[dbField] = sortOrder;
+                }
+            });
+        }
+
+        // Default sort if none provided
+        if (Object.keys(sortOptions).length === 0) {
             sortOptions.createdAt = -1;
         }
 

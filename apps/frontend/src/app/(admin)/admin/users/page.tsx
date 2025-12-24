@@ -28,8 +28,7 @@ export default function UsersPage() {
         queryKey: ["users", page, perPage, search, sorting, filters],
         queryFn: async () => {
             // Map sorting state to backend params
-            const sortField = sorting?.[0]?.id;
-            const sortOrder = sorting?.[0]?.desc ? "desc" : "asc";
+            const sortParam = sorting?.map(s => `${s.id}:${s.desc ? "desc" : "asc"}`).join(",");
 
             // Map filters state to backend params
             const roleFilter = filters.find(f => f.id === "role");
@@ -46,8 +45,7 @@ export default function UsersPage() {
                     page,
                     limit: perPage,
                     search,
-                    sortBy: sortField,
-                    order: sortOrder,
+                    sort: sortParam,
                     role,
                     status
                 }
