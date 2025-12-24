@@ -59,11 +59,13 @@ export class AdminService implements IAdminService {
         const user = await this.adminRepository.findUserById(userId);
         if (!user) throw new Error("User not found");
 
-        const { role, isActive, status } = updateData;
+        const { role, isActive, status, firstName, lastName } = updateData;
         const updates: any = {};
         if (role) updates.role = role;
         if (isActive !== undefined) updates.isActive = isActive;
         if (status) updates.status = status;
+        if (firstName) updates["profile.firstName"] = firstName;
+        if (lastName) updates["profile.lastName"] = lastName;
 
         const updatedUser = await this.adminRepository.updateUser(userId, updates);
         if (!updatedUser) throw new Error("Failed to update user");
