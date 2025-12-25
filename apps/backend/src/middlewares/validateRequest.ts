@@ -11,13 +11,25 @@ export const validateRequest = (schemas: IValidationSchemas) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
             if (schemas.body) {
-                req.body = await schemas.body.parseAsync(req.body);
+                const validatedBody = await schemas.body.parseAsync(req.body);
+                req.body = validatedBody; // req.body is usually safe to reassign, but if it fails we might need Object.assign(req.body, validatedBody) after clearing. Standard Express body parsers allow reassignment.
             }
             if (schemas.query) {
-                req.query = await schemas.query.parseAsync(req.query);
+                const validatedQuery = await schemas.query.parseAsync(req.query);
+                // req.query is a getter in some environments, so we mutate it.
+                // We clear existing keys and assign new ones to handle stripped fields.
+                for (const key in req.query) {
+                    delete (req.query as any)[key];
+                }
+                Object.assign(req.query, validatedQuery);
             }
             if (schemas.params) {
-                req.params = await schemas.params.parseAsync(req.params);
+                const validatedParams = await schemas.params.parseAsync(req.params);
+                // req.params can also be read-only/getter.
+                for (const key in req.params) {
+                    delete (req.params as any)[key];
+                }
+                Object.assign(req.params, validatedParams);
             }
             next();
         } catch (error) {
