@@ -101,7 +101,6 @@ export default function UsersPage() {
                     <DataTableAdvancedToolbar table={table} className="p-4 border-b">
                         <div className="flex items-center gap-2">
                             <Input placeholder="Search users..." value={search} onChange={(e) => setSearch(e.target.value)} />
-                            <DataTableFilterList table={table} />
                             <DataTableSortList table={table} />
                         </div>
                     </DataTableAdvancedToolbar>
