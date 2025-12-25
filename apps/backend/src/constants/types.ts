@@ -21,4 +21,7 @@ export const TYPES = {
 
     // Services (Admin)
     AdminService: Symbol.for("AdminService"),
+
+    // Services (Activity)
+    LoginActivityService: Symbol.for("LoginActivityService"),
 };

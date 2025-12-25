@@ -11,7 +11,9 @@ export class AuthController {
     login = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { email, password } = req.body;
-            const result = await this.authService.login({ email, passwordHash: password });
+            const ip = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress || "";
+            const userAgent = req.headers["user-agent"] || "";
+            const result = await this.authService.login({ email, passwordHash: password }, { ip, userAgent });
 
             res.cookie("refreshToken", result.refreshToken, {
                 httpOnly: true,

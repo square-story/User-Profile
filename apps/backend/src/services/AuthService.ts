@@ -9,13 +9,17 @@ import { AuthUtils } from "../utils/AuthUtils";
 import { UserPayload } from "../interfaces/UserPayload";
 
 import { IEmailService } from "../interfaces/IEmailService";
+import { ILoginActivityService } from "../interfaces/ILoginActivityService";
 
 @injectable()
 export class AuthService implements IAuthService {
     constructor(
         @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-        @inject(TYPES.EmailService) private emailService: IEmailService
+        @inject(TYPES.EmailService) private emailService: IEmailService,
+        @inject(TYPES.LoginActivityService) private loginActivityService: ILoginActivityService
     ) { }
+
+
 
     async register(data: CreateUserDto): Promise<void> {
         const existingUser = await this.userRepository.findByEmail(data.email);
@@ -125,7 +129,7 @@ export class AuthService implements IAuthService {
         await this.emailService.sendVerificationEmail(user.email, user.profile.firstName, verificationCode);
     }
 
-    async login(credentials: { email: string; passwordHash: string }): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
+    async login(credentials: { email: string; passwordHash: string }, clientInfo?: { ip: string, userAgent: string }): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
         const user = await this.userRepository.findByEmail(credentials.email);
         if (!user) {
             throw new Error("Invalid credentials");
@@ -153,7 +157,13 @@ export class AuthService implements IAuthService {
         await this.userRepository.updateRefreshToken(user._id as unknown as string, refreshToken);
 
         // Send Email (Async, non-blocking)
-        this.emailService.sendLoginAlertEmail(user.email, user.profile.firstName, "Unknown Device (IP Tracking Not Implemented)");
+        // Handle Login History & Notifications
+        if (clientInfo) {
+            await this.loginActivityService.recordLogin(user._id as unknown as string, clientInfo.ip, clientInfo.userAgent);
+        } else {
+            // Fallback if no info passed (legacy/test), maybe just log warning or skip
+            this.emailService.sendLoginAlertEmail(user.email, user.profile.firstName, "Unknown Device");
+        }
 
         return { accessToken, refreshToken, user };
     }

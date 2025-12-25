@@ -12,6 +12,8 @@ import { AdminService } from "./services/AdminService";
 import { AdminController } from "./controllers/AdminController";
 import { IEmailService } from "./interfaces/IEmailService";
 import { NodemailerEmailService } from "./services/NodemailerEmailService";
+import { ILoginActivityService } from "./interfaces/ILoginActivityService";
+import { LoginActivityService } from "./services/LoginActivityService";
 
 // Import Services
 import { AuthService } from "./services/AuthService";
@@ -42,6 +44,7 @@ container.bind<IProfileService>(TYPES.ProfileService).to(ProfileService);
 container.bind<INotificationService>(TYPES.NotificationService).to(NotificationService);
 container.bind<IEmailService>(TYPES.EmailService).to(NodemailerEmailService);
 container.bind<CloudinaryService>(TYPES.CloudinaryService).to(CloudinaryService);
+container.bind<ILoginActivityService>(TYPES.LoginActivityService).to(LoginActivityService);
 
 // Admin Module Bindings
 container.bind<IAdminRepository>(TYPES.AdminRepository).to(AdminRepository);
