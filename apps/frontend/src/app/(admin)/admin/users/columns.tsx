@@ -135,7 +135,7 @@ export const columns: ColumnDef<IUser>[] = [
         },
     }, {
         id: "actions",
-        cell: ({ row }) => <UserActions user={row.original} />,
+        cell: ({ row }) => <UserActions row={row} />,
         size: 32,
     },
 ]

@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { profileService } from "@/services/profile.service";
 import { toast } from "sonner";
+import { IUser } from "@/types";
 
 const formSchema = z.object({
     firstName: z.string().min(2),
@@ -24,8 +25,7 @@ const formSchema = z.object({
     bio: z.string().optional(),
 });
 
-export function EditProfileForm({ initialData, onUpdate }: { initialData: any, onUpdate: () => void }) {
-    const [error, setError] = React.useState<string | null>(null);
+export function EditProfileForm({ initialData, onUpdate }: { initialData: IUser['profile'], onUpdate: () => void }) {
     const [loading, setLoading] = React.useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -43,8 +43,10 @@ export function EditProfileForm({ initialData, onUpdate }: { initialData: any, o
             await profileService.updateProfile(values);
             toast.success("Profile updated successfully");
             onUpdate();
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || "Failed to update profile");
+        } catch (err: unknown) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const error = err as any;
+            toast.error(error.response?.data?.message || "Failed to update profile");
         } finally {
             setLoading(false);
         }
@@ -99,7 +101,6 @@ export function EditProfileForm({ initialData, onUpdate }: { initialData: any, o
                                 </FormItem>
                             )}
                         />
-                        {error && <p className="text-red-500 text-sm">{error}</p>}
                         <Button type="submit" disabled={loading}>{loading ? "Saving changes..." : "Save Changes"}</Button>
                     </form>
                 </Form>

@@ -71,8 +71,10 @@ export function VerifyEmailForm() {
             login(accessToken, user);
             toast.success("Email verified successfully!");
             router.push("/profile");
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || "Verification failed. Please check your code.");
+        } catch (err: unknown) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const error = err as any;
+            toast.error(error.response?.data?.message || "Something went wrong");
         } finally {
             setIsLoading(false);
         }
@@ -85,9 +87,11 @@ export function VerifyEmailForm() {
             await authService.resendVerification(email);
             toast.success("Verification code sent!");
             setCountdown(60); // 60 seconds cooldown
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || "Failed to resend code.");
-            if (err.response?.data?.message?.includes("wait")) {
+        } catch (err: unknown) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const error = err as any;
+            toast.error(error.response?.data?.message || "Failed to resend code.");
+            if (error.response?.data?.message?.includes("wait")) {
                 // extract seconds if possible or Just set a conservative 30s
                 setCountdown(30);
             }

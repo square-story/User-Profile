@@ -52,9 +52,10 @@ import { Separator } from "@/components/ui/separator";
 
 import { IUser } from "@/types";
 import { useUpdateUser, useDeactivateUser, useReactivateUser } from "@/hooks/use-users";
+import { Row } from "@tanstack/react-table";
 
 interface UserActionsProps {
-    user: IUser;
+    row: Row<IUser>;
 }
 
 const formSchema = z.object({
@@ -63,7 +64,8 @@ const formSchema = z.object({
     role: z.enum(["admin", "user"]),
 });
 
-export function UserActions({ user }: UserActionsProps) {
+export function UserActions({ row }: UserActionsProps) {
+    const user = row.original;
     const [openEdit, setOpenEdit] = useState(false);
     const [openView, setOpenView] = useState(false);
     const { mutate: updateUser, isPending: isUpdating } = useUpdateUser();
@@ -134,8 +136,8 @@ export function UserActions({ user }: UserActionsProps) {
                     <DialogHeader>
                         <DialogTitle>Edit User</DialogTitle>
                         <DialogDescription>
-                            Make changes to the user's profile and role here.
-                        </DialogDescription>
+                            This action cannot be undone. This will permanently delete the user&apos;s
+                            account and remove their data from our servers.                 </DialogDescription>
                     </DialogHeader>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

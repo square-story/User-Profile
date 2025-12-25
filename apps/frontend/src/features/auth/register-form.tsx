@@ -56,10 +56,12 @@ export function RegisterForm() {
 
             await authService.register(payload);
             router.push(`/register/verify?email=${encodeURIComponent(values.email)}`);
-        } catch (err: any) {
-            console.error(err);
-            toast.error(err.response?.data?.message || "Something went wrong");
-            setError(err.response?.data?.message || "Something went wrong");
+        } catch (err: unknown) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const error = err as any;
+            console.error(error);
+            toast.error(error.response?.data?.message || "Something went wrong");
+            setError(error.response?.data?.message || "Something went wrong");
         } finally {
             setLoading(false);
         }

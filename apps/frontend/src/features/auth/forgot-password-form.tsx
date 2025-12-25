@@ -41,8 +41,10 @@ export function ForgotPasswordForm() {
             await authService.forgotPassword(values.email);
             toast.success("Reset link sent to the email");
             router.push("/login");
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || "Something went wrong");
+        } catch (err: unknown) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const error = err as any;
+            toast.error(error.response?.data?.message || "Something went wrong");
         } finally {
             setIsLoading(false);
         }

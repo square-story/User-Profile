@@ -1,5 +1,5 @@
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, QueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { IUser } from "@/types";
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ export function useUpdateUser() {
             queryClient.invalidateQueries({ queryKey: ["users"] });
             toast.success("User updated successfully");
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onError: (error: any) => {
             toast.error(error.response?.data?.message || "Failed to update user");
         },
@@ -29,11 +30,11 @@ export function useUpdateUser() {
 }
 
 // Helper to update user status in cache
-const updateUserStatusInCache = (queryClient: any, userIds: string[], isActive: boolean) => {
-    queryClient.setQueriesData({ queryKey: ["users"] }, (oldData: any) => {
+const updateUserStatusInCache = (queryClient: QueryClient, userIds: string[], isActive: boolean) => {
+    queryClient.setQueriesData({ queryKey: ["users"] }, (oldData: { users: IUser[] } | IUser[] | undefined) => {
         if (!oldData) return oldData;
         // If data structure is { users: [...], total: ... }
-        if (oldData.users) {
+        if ("users" in oldData) {
             return {
                 ...oldData,
                 users: oldData.users.map((user: IUser) =>
@@ -65,7 +66,8 @@ export function useDeactivateUser() {
             updateUserStatusInCache(queryClient, [id], false);
             return { previousData };
         },
-        onError: (error: any, _, context) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onError: (error: any, _, context: any) => {
             if (context?.previousData) {
                 queryClient.setQueryData(["users"], context.previousData);
             }
@@ -91,7 +93,8 @@ export function useReactivateUser() {
             updateUserStatusInCache(queryClient, [id], true);
             return { previousData };
         },
-        onError: (error: any, _, context) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onError: (error: any, _, context: any) => {
             if (context?.previousData) {
                 queryClient.setQueryData(["users"], context.previousData);
             }
@@ -117,7 +120,8 @@ export function useBulkDeactivateUser() {
             updateUserStatusInCache(queryClient, userIds, false);
             return { previousData };
         },
-        onError: (error: any, _, context) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onError: (error: any, _, context: any) => {
             if (context?.previousData) {
                 queryClient.setQueryData(["users"], context.previousData);
             }
@@ -143,7 +147,8 @@ export function useBulkReactivateUser() {
             updateUserStatusInCache(queryClient, userIds, true);
             return { previousData };
         },
-        onError: (error: any, _, context) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onError: (error: any, _, context: any) => {
             if (context?.previousData) {
                 queryClient.setQueryData(["users"], context.previousData);
             }

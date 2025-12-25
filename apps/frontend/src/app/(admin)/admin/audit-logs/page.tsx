@@ -35,7 +35,6 @@ export default function AuditLogsPage() {
                     sort: sortParam
                 }
             });
-            console.log(res.data.data);
             return res.data.data;
         },
         placeholderData: keepPreviousData

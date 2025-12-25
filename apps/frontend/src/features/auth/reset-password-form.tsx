@@ -33,8 +33,8 @@ export function ResetPasswordForm() {
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
     const [isLoading, setIsLoading] = React.useState(false);
-    const [isTokenValid, setIsTokenValid] = React.useState<boolean | null>(null);
-    const [isCheckingToken, setIsCheckingToken] = React.useState(true); // Start as true
+    const [isCheckingToken, setIsCheckingToken] = React.useState(true);
+    const [isTokenValid, setIsTokenValid] = React.useState(true);
 
     React.useEffect(() => {
         if (!token) {
@@ -43,18 +43,18 @@ export function ResetPasswordForm() {
             return;
         }
 
-        const validateToken = async () => {
+        const verifyToken = async () => {
             try {
                 await authService.validateResetToken(token);
                 setIsTokenValid(true);
-            } catch (error) {
+            } catch {
+                toast.error("Invalid or expired reset token");
                 setIsTokenValid(false);
             } finally {
                 setIsCheckingToken(false);
             }
         };
-
-        validateToken();
+        verifyToken();
     }, [token]);
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -76,8 +76,10 @@ export function ResetPasswordForm() {
             await authService.resetPassword(token, values.password);
             toast.success("Password reset successfully");
             router.push("/login");
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || "Failed to reset password. Token may be invalid or expired.");
+        } catch (err: unknown) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const error = err as any;
+            toast.error(error.response?.data?.message || "Failed to reset password. Token may be invalid or expired.");
         } finally {
             setIsLoading(false);
         }
@@ -93,7 +95,7 @@ export function ResetPasswordForm() {
         );
     }
 
-    if (!isTokenValid) {
+    if (!isTokenValid || !token) {
         return (
             <Card className="w-[350px]">
                 <CardHeader>

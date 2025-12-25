@@ -46,9 +46,14 @@ function ChangePasswordForm() {
                 newPassword: data.newPassword
             });
             toast.success("Password changed successfully");
-            form.reset();
-        } catch (err: any) {
-            toast.error(err.response?.data?.message || "Failed to change password");
+        } catch (err: unknown) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const error = err as any;
+            if (error.response?.data?.message) {
+                toast.error(error.response.data.message);
+            } else {
+                toast.error("Failed to change password");
+            }
         } finally {
             setLoading(false);
         }

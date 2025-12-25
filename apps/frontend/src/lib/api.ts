@@ -34,7 +34,6 @@ api.interceptors.response.use(
 
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
-            console.log("Refreshing token...");
             try {
                 const { data } = await api.post("/auth/refresh");
                 const newAccessToken = data.data.accessToken;
