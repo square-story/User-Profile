@@ -46,14 +46,16 @@ export function LoginForm() {
             login(accessToken, user);
             toast.success("Login successful");
             router.push("/profile");
-        } catch (err: any) {
-            if (err.response?.data?.message === "User not verified") {
+        } catch (err: unknown) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const error = err as any;
+            if (error.response?.data?.message === "User not verified") {
                 toast.error("Please verify your email first.");
                 router.push(`/register/verify?email=${encodeURIComponent(values.email)}`);
                 return;
             }
-            toast.error(err.response?.data?.message || "Something went wrong");
-            setError(err.response?.data?.message || "Something went wrong");
+            toast.error(error.response?.data?.message || "Something went wrong");
+            setError(error.response?.data?.message || "Something went wrong");
         } finally {
             setLoading(false);
         }

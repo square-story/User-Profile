@@ -24,16 +24,9 @@ export const columns: ColumnDef<IAuditLog>[] = [
         cell: ({ row }) => {
             const profile = (row.original.adminId as IUser)?.profile;
             const fullName = `${profile.firstName} ${profile.lastName}`;
-            const initials = `${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}`.toUpperCase();
 
             return (
-                <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                        <AvatarImage src={profile.avatarUrl} alt={fullName} />
-                        <AvatarFallback>{initials}</AvatarFallback>
-                    </Avatar>
-                    <span className="truncate font-medium">{fullName}</span>
-                </div>
+                <span className="truncate font-medium">{fullName}</span>
             )
         },
     },
@@ -53,9 +46,7 @@ export const columns: ColumnDef<IAuditLog>[] = [
         cell: ({ row }) => {
             const admin = row.original.adminId;
             return (
-                <div>
-                    {(admin as IUser)?.email || "Not Available"}
-                </div>
+                <span className="truncate font-medium">{(admin as IUser)?.email || "Not Available"}</span>
             )
         },
         enableSorting: false, // Disabling as per simple backend implementation
@@ -74,7 +65,7 @@ export const columns: ColumnDef<IAuditLog>[] = [
         ),
         cell: ({ row }) => {
             return (
-                <span className="truncate">
+                <span className="truncate font-medium">
                     {format(new Date(row.getValue("createdAt")), "PP pp")}
                 </span>
             )

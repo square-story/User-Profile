@@ -6,7 +6,7 @@ export const profileService = {
         return response.data.data;
     },
 
-    updateProfile: async (data: any) => {
+    updateProfile: async (data: { firstName: string; lastName: string; bio?: string }) => {
         const response = await api.put("/profile", data);
         return response.data.data;
     },

@@ -4,7 +4,9 @@ import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
 import { format } from "date-fns"
 
-export const loginHistoryColumns: ColumnDef<any>[] = [
+import { ILoginHistory } from "@/types"
+
+export const loginHistoryColumns: ColumnDef<ILoginHistory>[] = [
     {
         accessorKey: "loginAt",
         header: ({ column }) => (

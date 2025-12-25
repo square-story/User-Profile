@@ -13,11 +13,12 @@ import { profileService } from "@/services/profile.service";
 import { authService } from "@/services/auth.service";
 import { ProfileSkeleton } from "@/features/profile/profile-skeleton";
 import { AvatarUpload } from "@/components/avatar-upload";
+import { IUser } from "@/types";
 
 export default function ProfilePage() {
     const { user, logout } = useAuthStore();
     const router = useRouter();
-    const [profile, setProfile] = React.useState<any>(null);
+    const [profile, setProfile] = React.useState<IUser['profile'] | null>(null);
 
     const fetchProfile = React.useCallback(async () => {
         if (!user) return;

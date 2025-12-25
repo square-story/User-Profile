@@ -219,7 +219,7 @@ export function DataTableFilterList<TData>({
     <Sortable
       value={filters}
       onValueChange={setFilters}
-      getItemValue={(item: { filterId: any; }) => item.filterId}
+      getItemValue={(item: { filterId: string; }) => item.filterId}
     >
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -639,7 +639,7 @@ function onFilterInputRender<TData>({
         <Select
           open={showValueSelector}
           onOpenChange={setShowValueSelector}
-          value={filter.value}
+          value={filter.value as string}
           onValueChange={(value) =>
             onFilterUpdate(filter.filterId, {
               value,

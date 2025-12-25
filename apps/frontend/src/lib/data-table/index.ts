@@ -1,4 +1,4 @@
-export function getCommonPinningStyles<TData>({
+export function getCommonPinningStyles({
     column,
 }: {
     column: {
@@ -8,8 +8,6 @@ export function getCommonPinningStyles<TData>({
     }
 }): React.CSSProperties {
     const isPinned = column.getIsPinned()
-    const isLastLeftPinned =
-        isPinned === "left" && column.id === "select" // Example logic, adjust for real usage if needed
 
     return {
         left: isPinned === "left" ? `${column.getStart()}px` : undefined,

@@ -1,14 +1,17 @@
 import type { ColumnSort, Row, RowData } from "@tanstack/react-table";
 import type { DataTableConfig } from "@/config/data-table";
-import type { FilterItemSchema } from "@/lib/parsers";
+
+
 
 declare module "@tanstack/react-table" {
   // biome-ignore lint/correctness/noUnusedVariables: TData is used in the TableMeta interface
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
     queryKeys?: QueryKeys;
   }
 
   // biome-ignore lint/correctness/noUnusedVariables: TData and TValue are used in the ColumnMeta interface
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     label?: string;
     placeholder?: string;
@@ -43,8 +46,23 @@ export interface ExtendedColumnSort<TData> extends Omit<ColumnSort, "id"> {
   id: Extract<keyof TData, string>;
 }
 
-export interface ExtendedColumnFilter<TData> extends FilterItemSchema {
+export interface ExtendedColumnFilter<TData> {
   id: Extract<keyof TData, string>;
+  filterId: string;
+  value: unknown;
+  variant: FilterVariant;
+  operator: FilterOperator;
+}
+
+export interface DataTableSearchableColumn {
+  id: string;
+  title: string;
+}
+
+export interface DataTableFilterableColumn {
+  id: string;
+  title: string;
+  options: Option[];
 }
 
 export interface DataTableRowAction<TData> {
