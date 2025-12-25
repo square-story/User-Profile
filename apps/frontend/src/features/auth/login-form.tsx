@@ -53,6 +53,7 @@ export function LoginForm() {
                 return;
             }
             toast.error(err.response?.data?.message || "Something went wrong");
+            setError(err.response?.data?.message || "Something went wrong");
         } finally {
             setLoading(false);
         }
