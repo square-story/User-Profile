@@ -8,18 +8,24 @@ Designed for production readiness, it includes JWT cookie-based authentication, 
 
 ### 🔐 Authentication & Security
 *   **Secure Auth**: JWT-based authentication using HTTP-only cookies (Access & Refresh tokens).
+*   **Email Verification**: New user registration requires OTP verification via email.
 *   **RBAC**: Role-Based Access Control protecting Admin routes (`adminMiddleware`).
 *   **Security Headers**: Integrated `helmet` and CORS configuration for security.
 *   **Password Hashing**: `bcryptjs` for secure password storage.
 
 ### 👤 User Profile Management
 *   **Profile Operations**: View, edit, and update user profiles.
-*   **Avatar Management**: (Planned/Implemented) Support for profile pictures.
-*   **Password Management**: Change password and "Forgot Password" flows integrated with email.
+*   **Avatar Management**: Users can upload and update profile pictures (integrated with **Cloudinary**).
+*   **Password Management**: Change password and "Forgot Password" flows with secure email verification.
 
 ### 📧 Notifications & Emails
 *   **Email System**: `Nodemailer` integration for sending verification, password reset, and login alert emails.
 *   **In-App Notifications**: Real-time accessible notifications stored in MongoDB (Capped Collections for efficiency).
+
+### 🛡 Admin & Monitoring
+*   **Audit Logs**: Tracks critical system actions (e.g., user updates, logins).
+*   **Login History**: Records user login details including IP and device info.
+*   **User Management**: Admin interface to view, search, filter, and block/unblock users.
 
 ### 🛠 Architecture & Code Quality
 *   **Clean Architecture**: Backend organized into *Controllers*, *Services*, and *Repositories* with *Dependency Injection* (InversifyJS).
@@ -28,6 +34,17 @@ Designed for production readiness, it includes JWT cookie-based authentication, 
 *   **Modern UI**: Built with `Next.js 15` (App Router), `Tailwind CSS`, and `Shadcn/UI` components (Tabs, Cards, Forms).
 
 ---
+
+## 📸 Screenshots
+
+| Dashboard | Profile |
+|-----------|---------|
+| ![Dashboard Dashboard](/screenshots/dashboard.jpeg) | ![Profile Page](/screenshots/profile.jpeg) |
+
+| Audit Logs | Login |
+|------------|-------|
+| ![Audit Logs](/screenshots/audit-logs.jpeg) | ![Login Page](/screenshots/login.jpeg) |
+
 
 ## 🏗 Tech Stack
 
@@ -44,6 +61,7 @@ Designed for production readiness, it includes JWT cookie-based authentication, 
 *   **Framework**: Express.js
 *   **Language**: TypeScript
 *   **Database**: MongoDB (Mongoose), using connection caching for Serverless.
+*   **Cloud Storage**: Cloudinary (for avatar uploads)
 *   **DI Container**: InversifyJS
 *   **Email**: Nodemailer
 
@@ -60,6 +78,7 @@ User-Profile/
 │   │   ├── src/
 │   │   │   ├── config/          # Environment & Database config
 │   │   │   ├── controllers/     # Request handlers
+│   │   │   ├── validators/      # Zod schemas for input validation
 │   │   │   ├── services/        # Business logic
 │   │   │   ├── repositories/    # Data access layer
 │   │   │   ├── models/          # Mongoose schemas
@@ -114,6 +133,9 @@ SMTP_PORT=587
 SMTP_USER=user@example.com
 SMTP_PASS=password
 ALLOWED_ORIGINS=http://localhost:3000
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 **Frontend (`apps/frontend/.env`)**
@@ -155,3 +177,6 @@ The backend exposes a RESTful API. Key endpoints include:
 *   **Admin** (Protected):
     *   `GET /api/admin/users` - List all users
     *   `PATCH /api/admin/users/:id/status` - Block/Unblock user
+
+---
+
