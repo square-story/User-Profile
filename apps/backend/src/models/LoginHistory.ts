@@ -19,8 +19,8 @@ const LoginHistorySchema: Schema = new Schema(
         loginAt: { type: Date, default: Date.now },
     },
     {
-        timestamps: false, // We only care about loginAt, which is handled manually or via default
-        versionKey: false
+        timestamps: false,
+        versionKey: false,
     }
 );
 

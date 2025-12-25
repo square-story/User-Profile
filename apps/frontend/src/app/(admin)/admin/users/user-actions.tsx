@@ -5,8 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { MoreHorizontal, Loader2, Trash } from "lucide-react";
-import { format } from "date-fns";
+import { MoreHorizontal, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {

@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { DataTable } from "@/components/data-table/data-table"
@@ -9,7 +8,7 @@ import { useDataTable } from "@/hooks/use-data-table"
 import { DataTablePagination } from "@/components/data-table/data-table-pagination"
 import api from "@/lib/api"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
@@ -30,7 +29,7 @@ export default function UserDetailPage() {
     });
 
     // Fetch Login History
-    const { data: history = [], isLoading: isLoadingHistory } = useQuery({
+    const { data: history = [] } = useQuery({
         queryKey: ["user-history", id],
         queryFn: async () => {
             const res = await api.get(`/admin/users/${id}/history`);

@@ -89,7 +89,7 @@ export class AdminService implements IAdminService {
 
         await this.adminRepository.createAuditLog({
             action: "UPDATE_USER",
-            resource: "User",
+            resource: "Admin",
             adminId: new mongoose.Types.ObjectId(adminId),
             targetUserId: new mongoose.Types.ObjectId(userId),
             details: `Updated user ${user.email}`,
@@ -110,7 +110,7 @@ export class AdminService implements IAdminService {
         await this.adminRepository.updateUser(userId, { isActive: false, status: "inactive" });
         await this.adminRepository.createAuditLog({
             action: "DEACTIVATE_USER",
-            resource: "User",
+            resource: "Admin",
             adminId: new mongoose.Types.ObjectId(adminId),
             targetUserId: new mongoose.Types.ObjectId(userId),
             details: `Deactivated user ${user.email}`,
@@ -124,7 +124,7 @@ export class AdminService implements IAdminService {
         await this.adminRepository.updateUser(userId, { isActive: true, status: "active" });
         await this.adminRepository.createAuditLog({
             action: "REACTIVATE_USER",
-            resource: "User",
+            resource: "Admin",
             adminId: new mongoose.Types.ObjectId(adminId),
             targetUserId: new mongoose.Types.ObjectId(userId),
             details: `Reactivated user ${user.email}`,
@@ -145,7 +145,7 @@ export class AdminService implements IAdminService {
 
         await this.adminRepository.createAuditLog({
             action: "BULK_DEACTIVATE",
-            resource: "User",
+            resource: "Admin",
             adminId: new mongoose.Types.ObjectId(adminId),
             details: `Bulk deactivated ${filteredIds.length} users`,
             changes: { userIds: filteredIds }
@@ -159,7 +159,7 @@ export class AdminService implements IAdminService {
 
         await this.adminRepository.createAuditLog({
             action: "BULK_REACTIVATE",
-            resource: "User",
+            resource: "Admin",
             adminId: new mongoose.Types.ObjectId(adminId),
             details: `Bulk reactivated ${userIds.length} users`,
             changes: { userIds }
@@ -171,13 +171,68 @@ export class AdminService implements IAdminService {
         const limit = parseInt(params.limit as string) || 20;
         const skip = (page - 1) * limit;
 
-        const { action, userId } = params;
+        const { search, action, userId, sort } = params;
         const query: any = {};
+
         if (action) query.action = action;
         if (userId) query.adminId = userId;
 
+        if (search) {
+            // Two-step search: 
+            // 1. Find users matching the search string (email/name)
+            // 2. Find logs where adminId OR targetUserId matches those users, OR details contains the string
+
+            const userSearchQuery = {
+                $or: [
+                    { email: { $regex: search, $options: "i" } },
+                    { "profile.firstName": { $regex: search, $options: "i" } },
+                    { "profile.lastName": { $regex: search, $options: "i" } },
+                ]
+            };
+
+            // We need to get IDs only, but findAllUsers returns full objects. 
+            // Depending on repository method, this might be slightly inefficient if we fetch huge docs, 
+            // but for admin search it's usually acceptable.
+            // Ideally we'd have a findUserIds method, but for now we reuse findAllUsers.
+            const matchingUsers = await this.adminRepository.findAllUsers(userSearchQuery, {}, 0, 100); // limit 100 for perf safety
+            const matchingUserIds = matchingUsers.map(u => u._id);
+
+            query.$or = [
+                { adminId: { $in: matchingUserIds } },
+                { targetUserId: { $in: matchingUserIds } },
+                { details: { $regex: search, $options: "i" } },
+                { action: { $regex: search, $options: "i" } }
+            ];
+        }
+
+        const sortOptions: any = {};
+        if (sort) {
+            const sortFields = Array.isArray(sort) ? sort : sort.split(',');
+            sortFields.forEach((fieldStr: string) => {
+                const [field, order] = fieldStr.split(':');
+                if (field) {
+                    const sortOrder = order === 'desc' ? -1 : 1;
+                    // Map frontend fields to DB fields if needed
+                    let dbField = field;
+                    if (field === 'admin') dbField = 'adminId'; // Sort by populated field might not work directly in simple find without aggregate, but let's try or default to createdAt
+
+                    // MongoDB simple sort doesn't support sorting by populated fields easily. 
+                    // For 'admin', we might ignore or need aggregation. 
+                    // For now, let's support direct fields.
+                    if (dbField !== 'adminId') {
+                        sortOptions[dbField] = sortOrder;
+                    }
+                }
+            });
+        }
+
+        // Default sort
+        if (Object.keys(sortOptions).length === 0) {
+            sortOptions.createdAt = -1;
+        }
+
         const [logs, total] = await Promise.all([
-            this.adminRepository.findAllAuditLogs(query, { createdAt: -1 }, skip, limit),
+            this.adminRepository.findAllAuditLogs(query, sortOptions, skip, limit),
             this.adminRepository.countAuditLogs(query)
         ]);
 

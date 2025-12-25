@@ -9,7 +9,6 @@ import api from "@/lib/api"
 import { parseAsInteger, useQueryState, parseAsString } from "nuqs"
 import { getSortingStateParser, getFiltersStateParser } from "@/lib/parsers"
 import { DataTableAdvancedToolbar } from "@/components/data-table/data-table-advanced-toolbar"
-import { DataTableFilterList } from "@/components/data-table/data-table-filter-list"
 import { DataTableSortList } from "@/components/data-table/data-table-sort-list"
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton"
 import { Input } from "@/components/ui/input"
@@ -40,9 +39,6 @@ export default function UsersPage() {
             const roleFilter = filters.find(f => f.id === "role");
             const statusFilter = filters.find(f => f.id === "status");
 
-            // Extract values. filters[i].value can be string or array depending on parsing/input.
-            // Our meta says 'select' (single) but DataTableFilterList allows arrays for 'multiSelect'.
-            // For 'select', value is string.
             const role = roleFilter ? (Array.isArray(roleFilter.value) ? roleFilter.value[0] : roleFilter.value) : undefined;
             const status = statusFilter ? (Array.isArray(statusFilter.value) ? statusFilter.value[0] : statusFilter.value) : undefined;
 
