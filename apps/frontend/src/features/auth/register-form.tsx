@@ -17,7 +17,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { authService } from "@/services/auth.service";
-import { useAuthStore } from "@/store/useAuthStore";
 import { toast } from "sonner";
 
 const formSchema = z.object({

@@ -3,19 +3,39 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
 import { format } from "date-fns"
-import { IAuditLog } from "@/types" // Need to define IAuditLog?
+import { IAuditLog, IUser } from "@/types"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-// I'll assume IAuditLog needs to be added to types/index.ts or defined locally if small.
-// Let's rely on 'any' for now to avoid blocking or update types next.
-// Better to update types. I'll add IAuditLog to types/index.ts in parallel.
-
-export const columns: ColumnDef<any>[] = [
+export const columns: ColumnDef<IAuditLog>[] = [
     {
         accessorKey: "action",
         header: ({ column }) => (
             <DataTableColumnHeader column={column} label="Action" />
         ),
         cell: ({ row }) => <div className="font-medium">{row.getValue("action")}</div>,
+        enableSorting: true,
+    },
+    {
+        accessorKey: "profile.firstName",
+        id: "user",
+        header: ({ column }) => (
+            <DataTableColumnHeader column={column} label="User" />
+        ),
+        cell: ({ row }) => {
+            const profile = (row.original.adminId as IUser)?.profile;
+            const fullName = `${profile.firstName} ${profile.lastName}`;
+            const initials = `${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}`.toUpperCase();
+
+            return (
+                <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                        <AvatarImage src={profile.avatarUrl} alt={fullName} />
+                        <AvatarFallback>{initials}</AvatarFallback>
+                    </Avatar>
+                    <span className="truncate font-medium">{fullName}</span>
+                </div>
+            )
+        },
     },
     {
         accessorKey: "resource",
@@ -23,6 +43,7 @@ export const columns: ColumnDef<any>[] = [
             <DataTableColumnHeader column={column} label="Resource" />
         ),
         cell: ({ row }) => <div>{row.getValue("resource")}</div>,
+        enableSorting: true,
     },
     {
         accessorKey: "adminId",
@@ -33,10 +54,11 @@ export const columns: ColumnDef<any>[] = [
             const admin = row.original.adminId;
             return (
                 <div>
-                    {admin?.email || admin}
+                    {(admin as IUser)?.email || "Not Available"}
                 </div>
             )
         },
+        enableSorting: false, // Disabling as per simple backend implementation
     },
     {
         accessorKey: "details",
@@ -57,5 +79,6 @@ export const columns: ColumnDef<any>[] = [
                 </span>
             )
         },
+        enableSorting: true,
     },
 ]
