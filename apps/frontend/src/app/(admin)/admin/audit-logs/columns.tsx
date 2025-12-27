@@ -4,7 +4,6 @@ import { ColumnDef } from "@tanstack/react-table"
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
 import { format } from "date-fns"
 import { IAuditLog, IUser } from "@/types"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export const columns: ColumnDef<IAuditLog>[] = [
     {

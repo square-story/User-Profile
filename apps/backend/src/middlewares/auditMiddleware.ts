@@ -1,6 +1,8 @@
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "./authMiddleware";
-import { AuditLog } from "../models/AuditLog";
+import { container } from "../container";
+import { TYPES } from "../constants/types";
+import { IAdminRepository } from "../interfaces/IAdminRepository";
 
 export const auditMiddleware = (action: string, resource: string) => {
     return async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -9,10 +11,12 @@ export const auditMiddleware = (action: string, resource: string) => {
                 const ipAddress = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress || "";
                 const userAgent = req.headers["user-agent"] || "";
 
-                AuditLog.create({
+                const adminRepository = container.get<IAdminRepository>(TYPES.AdminRepository);
+
+                adminRepository.createAuditLog({
                     action,
                     resource,
-                    adminId: req.user.userId,
+                    adminId: req.user.userId as any, // Cast to any to avoid strict ObjectId type issues if interface mismatches string
                     ipAddress,
                     userAgent,
                     details: `API Call to ${req.originalUrl}`,

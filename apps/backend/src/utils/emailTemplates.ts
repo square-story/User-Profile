@@ -13,7 +13,7 @@ export const emailTemplates = {
             <h2>Reset Your Password</h2>
             <p>Hi ${name},</p>
             <p>You requested a password reset. Click the link below to reset it:</p>
-            <a href="http://localhost:3000/reset-password?token=${token}" style="padding: 10px 20px; background-color: #dc2626; color: white; text-decoration: none; border-radius: 5px;">Reset Password</a>
+            <a href="${process.env.ALLOWED_ORIGINS}/reset-password?token=${token}" style="padding: 10px 20px; background-color: #dc2626; color: white; text-decoration: none; border-radius: 5px;">Reset Password</a>
             <p>This link expires in 1 hour.</p>
         </div>
     `,
