@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "@/lib/error-utils";
 
 import * as React from "react";
 import { useForm } from "react-hook-form";
@@ -57,11 +58,10 @@ export function RegisterForm() {
             await authService.register(payload);
             router.push(`/register/verify?email=${encodeURIComponent(values.email)}`);
         } catch (err: unknown) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const error = err as any;
-            console.error(error);
-            toast.error(error.response?.data?.message || "Something went wrong");
-            setError(error.response?.data?.message || "Something went wrong");
+            const message = getErrorMessage(err);
+            console.error(err);
+            toast.error(message);
+            setError(message);
         } finally {
             setLoading(false);
         }

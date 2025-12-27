@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "@/lib/error-utils";
 
 import * as React from "react";
 import { useForm } from "react-hook-form";
@@ -44,9 +45,7 @@ export function EditProfileForm({ initialData, onUpdate }: { initialData: IUser[
             toast.success("Profile updated successfully");
             onUpdate();
         } catch (err: unknown) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const error = err as any;
-            toast.error(error.response?.data?.message || "Failed to update profile");
+            toast.error(getErrorMessage(err) || "Failed to update profile");
         } finally {
             setLoading(false);
         }

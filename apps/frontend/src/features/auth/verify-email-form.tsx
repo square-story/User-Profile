@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "@/lib/error-utils";
 
 import * as React from "react";
 import { useForm } from "react-hook-form";
@@ -72,9 +73,7 @@ export function VerifyEmailForm() {
             toast.success("Email verified successfully!");
             router.push("/profile");
         } catch (err: unknown) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const error = err as any;
-            toast.error(error.response?.data?.message || "Something went wrong");
+            toast.error(getErrorMessage(err) || "Something went wrong");
         } finally {
             setIsLoading(false);
         }
@@ -88,10 +87,9 @@ export function VerifyEmailForm() {
             toast.success("Verification code sent!");
             setCountdown(60); // 60 seconds cooldown
         } catch (err: unknown) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const error = err as any;
-            toast.error(error.response?.data?.message || "Failed to resend code.");
-            if (error.response?.data?.message?.includes("wait")) {
+            const message = getErrorMessage(err);
+            toast.error(message || "Failed to resend code.");
+            if (message?.toLowerCase().includes("wait")) {
                 // extract seconds if possible or Just set a conservative 30s
                 setCountdown(30);
             }

@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "@/lib/error-utils";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,13 +48,8 @@ function ChangePasswordForm() {
             });
             toast.success("Password changed successfully");
         } catch (err: unknown) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const error = err as any;
-            if (error.response?.data?.message) {
-                toast.error(error.response.data.message);
-            } else {
-                toast.error("Failed to change password");
-            }
+            toast.error(getErrorMessage(err) || "Failed to change password");
+            form.reset();
         } finally {
             setLoading(false);
         }

@@ -1,5 +1,7 @@
 "use client";
 
+import { getErrorMessage } from "@/lib/error-utils";
+
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,15 +49,16 @@ export function LoginForm() {
             toast.success("Login successful");
             router.push("/profile");
         } catch (err: unknown) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const error = err as any;
-            if (error.response?.data?.message === "User not verified") {
+            const message = getErrorMessage(err);
+
+            if (message === "User not verified") {
                 toast.error("Please verify your email first.");
                 router.push(`/register/verify?email=${encodeURIComponent(values.email)}`);
                 return;
             }
-            toast.error(error.response?.data?.message || "Something went wrong");
-            setError(error.response?.data?.message || "Something went wrong");
+
+            toast.error(message);
+            setError(message);
         } finally {
             setLoading(false);
         }

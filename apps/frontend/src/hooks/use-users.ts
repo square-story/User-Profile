@@ -1,6 +1,7 @@
 
 import { useMutation, useQueryClient, QueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { getErrorMessage } from "@/lib/error-utils";
 import { IUser } from "@/types";
 import { toast } from "sonner";
 
@@ -22,9 +23,8 @@ export function useUpdateUser() {
             queryClient.invalidateQueries({ queryKey: ["users"] });
             toast.success("User updated successfully");
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onError: (error: any) => {
-            toast.error(error.response?.data?.message || "Failed to update user");
+        onError: (error) => {
+            toast.error(getErrorMessage(error) || "Failed to update user");
         },
     });
 }
@@ -66,12 +66,11 @@ export function useDeactivateUser() {
             updateUserStatusInCache(queryClient, [id], false);
             return { previousData };
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onError: (error: any, _, context: any) => {
+        onError: (error, _, context: any) => {
             if (context?.previousData) {
                 queryClient.setQueryData(["users"], context.previousData);
             }
-            toast.error(error.response?.data?.message || "Failed to deactivate user");
+            toast.error(getErrorMessage(error) || "Failed to deactivate user");
         },
         onSuccess: () => {
             toast.success("User deactivated successfully");
@@ -93,12 +92,11 @@ export function useReactivateUser() {
             updateUserStatusInCache(queryClient, [id], true);
             return { previousData };
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onError: (error: any, _, context: any) => {
+        onError: (error, _, context: any) => {
             if (context?.previousData) {
                 queryClient.setQueryData(["users"], context.previousData);
             }
-            toast.error(error.response?.data?.message || "Failed to reactivate user");
+            toast.error(getErrorMessage(error) || "Failed to reactivate user");
         },
         onSuccess: () => {
             toast.success("User reactivated successfully");
@@ -120,12 +118,11 @@ export function useBulkDeactivateUser() {
             updateUserStatusInCache(queryClient, userIds, false);
             return { previousData };
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onError: (error: any, _, context: any) => {
+        onError: (error, _, context: any) => {
             if (context?.previousData) {
                 queryClient.setQueryData(["users"], context.previousData);
             }
-            toast.error(error.response?.data?.message || "Failed to deactivate users");
+            toast.error(getErrorMessage(error) || "Failed to deactivate users");
         },
         onSuccess: () => {
             toast.success("Users deactivated successfully");
@@ -147,12 +144,11 @@ export function useBulkReactivateUser() {
             updateUserStatusInCache(queryClient, userIds, true);
             return { previousData };
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onError: (error: any, _, context: any) => {
+        onError: (error, _, context: any) => {
             if (context?.previousData) {
                 queryClient.setQueryData(["users"], context.previousData);
             }
-            toast.error(error.response?.data?.message || "Failed to reactivate users");
+            toast.error(getErrorMessage(error) || "Failed to reactivate users");
         },
         onSuccess: () => {
             toast.success("Users reactivated successfully");

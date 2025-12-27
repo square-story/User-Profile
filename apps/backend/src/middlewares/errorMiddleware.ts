@@ -4,9 +4,9 @@ import { normalizeError } from "../utils/errorUtils";
 export const errorMiddleware = (error: unknown, req: Request, res: Response, next: NextFunction) => {
     const appError = normalizeError(error);
 
-    const LOG_ERRORS = process.env.NODE_ENV !== 'test';
+    const LOG_ERRORS = process.env.NODE_ENV === 'development';
 
-    if (LOG_ERRORS && !appError.isOperational) {
+    if (LOG_ERRORS || !appError.isOperational) {
         console.error("💥 UNEXPECTED ERROR:", appError);
     }
 

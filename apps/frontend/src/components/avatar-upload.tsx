@@ -8,6 +8,7 @@ import { profileService } from "@/services/profile.service";
 import { Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/error-utils";
 
 interface AvatarUploadProps {
     currentAvatarUrl?: string;
@@ -82,7 +83,7 @@ export function AvatarUpload({
             onUploadSuccess();
         } catch (error) {
             console.error(error);
-            toast.error("Failed to upload avatar.");
+            toast.error(getErrorMessage(error) || "Failed to upload avatar.");
             setPreview(currentAvatarUrl || null); // Revert on failure
         } finally {
             setIsLoading(false);

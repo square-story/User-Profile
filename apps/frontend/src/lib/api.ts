@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "@/store/useAuthStore";
+import { toast } from "sonner";
 
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_BACKEND_URL + "/api",
@@ -25,10 +26,12 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // Handle Account Deactivation (403)
         if (error.response?.status === 403) {
-            useAuthStore.getState().logout();
-            location.href = "/login";
+            const isAuthRoute = originalRequest.url?.includes("/auth/login") || originalRequest.url?.includes("/auth/verify");
+            if (!isAuthRoute) {
+                useAuthStore.getState().logout();
+                toast.error("Your Account is not authorized to access this page");
+            }
             return Promise.reject(error);
         }
 
