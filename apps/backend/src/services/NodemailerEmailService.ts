@@ -21,7 +21,7 @@ export class NodemailerEmailService implements IEmailService {
         });
     }
 
-    private async sendEmail(to: string, subject: string, html: string) {
+    private async _sendMail(to: string, subject: string, html: string) {
         try {
             const info = await this._transporter.sendMail({
                 from: '"SecureApp" <no-reply@secureapp.com>',
@@ -40,18 +40,18 @@ export class NodemailerEmailService implements IEmailService {
     }
 
     async sendVerificationEmail(to: string, name: string, token: string): Promise<void> {
-        await this.sendEmail(to, "Verify Your Email", emailTemplates.verification(name, token));
+        await this._sendMail(to, "Verify Your Email", emailTemplates.verification(name, token));
     }
 
     async sendPasswordResetEmail(to: string, name: string, token: string): Promise<void> {
-        await this.sendEmail(to, "Reset Your Password", emailTemplates.passwordReset(name, token));
+        await this._sendMail(to, "Reset Your Password", emailTemplates.passwordReset(name, token));
     }
 
     async sendLoginAlertEmail(to: string, name: string, deviceInfo: string): Promise<void> {
-        await this.sendEmail(to, "New Login Detected", emailTemplates.loginAlert(name, deviceInfo));
+        await this._sendMail(to, "New Login Detected", emailTemplates.loginAlert(name, deviceInfo));
     }
 
     async sendProfileUpdateEmail(to: string, name: string): Promise<void> {
-        await this.sendEmail(to, "Profile Updated", emailTemplates.profileUpdate(name));
+        await this._sendMail(to, "Profile Updated", emailTemplates.profileUpdate(name));
     }
 }

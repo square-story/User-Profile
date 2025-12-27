@@ -9,9 +9,9 @@ import { LoginHistory } from "../models/LoginHistory";
 @injectable()
 export class LoginActivityService implements ILoginActivityService {
     constructor(
-        @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-        @inject(TYPES.NotificationService) private notificationService: INotificationService,
-        @inject(TYPES.EmailService) private emailService: IEmailService
+        @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
+        @inject(TYPES.NotificationService) private _notificationService: INotificationService,
+        @inject(TYPES.EmailService) private _emailService: IEmailService
     ) { }
 
     async recordLogin(userId: string, ip: string, userAgent: string): Promise<void> {
@@ -28,15 +28,15 @@ export class LoginActivityService implements ILoginActivityService {
         const knownDevice = await LoginHistory.findOne({ userId, ipAddress: ip, userAgent });
 
         if (!knownDevice) {
-            const user = await this.userRepository.findById(userId);
+            const user = await this._userRepository.findById(userId);
             if (user) {
                 const deviceInfo = `${userAgent} (IP: ${ip})`;
 
                 // 1. Send Email Alert
-                await this.emailService.sendLoginAlertEmail(user.email, user.profile.firstName, deviceInfo);
+                await this._emailService.sendLoginAlertEmail(user.email, user.profile.firstName, deviceInfo);
 
                 // 2. Create In-App Notification
-                await this.notificationService.createNotification(
+                await this._notificationService.createNotification(
                     userId,
                     `New login detected from ${deviceInfo}. If this wasn't you, please change your password immediately.`
                 );

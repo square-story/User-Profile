@@ -6,14 +6,14 @@ import { IAuthService } from "../interfaces/IAuthService";
 
 @injectable()
 export class AuthController {
-    constructor(@inject(TYPES.AuthService) private authService: IAuthService) { }
+    constructor(@inject(TYPES.AuthService) private _authService: IAuthService) { }
 
     login = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { email, password } = req.body;
             const ip = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress || "";
             const userAgent = req.headers["user-agent"] || "";
-            const result = await this.authService.login({ email, passwordHash: password }, { ip, userAgent });
+            const result = await this._authService.login({ email, passwordHash: password }, { ip, userAgent });
 
             res.cookie("refreshToken", result.refreshToken, {
                 httpOnly: true,
@@ -33,7 +33,7 @@ export class AuthController {
 
     register = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            await this.authService.register(req.body);
+            await this._authService.register(req.body);
 
             res.status(201).json({
                 success: true,
@@ -47,7 +47,7 @@ export class AuthController {
     verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { email, code } = req.body;
-            const result = await this.authService.verifyEmail(email, code);
+            const result = await this._authService.verifyEmail(email, code);
 
             res.cookie("refreshToken", result.refreshToken, {
                 httpOnly: true,
@@ -68,7 +68,7 @@ export class AuthController {
     resendVerification = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { email } = req.body;
-            await this.authService.resendVerification(email);
+            await this._authService.resendVerification(email);
             res.status(200).json({
                 success: true,
                 message: "Verification code sent successfully.",
@@ -83,7 +83,7 @@ export class AuthController {
             // Cast to AuthRequest since middleware ensures it
             const userId = (req as AuthRequest).user?.userId;
             if (userId) {
-                await this.authService.logout(userId);
+                await this._authService.logout(userId);
             }
 
             res.clearCookie("refreshToken");
@@ -98,7 +98,7 @@ export class AuthController {
             const refreshToken = req.cookies.refreshToken;
             if (!refreshToken) throw new Error("No refresh token");
 
-            const result = await this.authService.refreshTokens(refreshToken);
+            const result = await this._authService.refreshTokens(refreshToken);
 
             res.cookie("refreshToken", result.refreshToken, {
                 httpOnly: true,
@@ -119,7 +119,7 @@ export class AuthController {
     forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { email } = req.body;
-            await this.authService.forgotPassword(email);
+            await this._authService.forgotPassword(email);
             res.status(200).json({ success: true, message: "If that email exists, a reset link has been sent." });
         } catch (error) {
             next(error);
@@ -129,7 +129,7 @@ export class AuthController {
     resetPassword = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { token, newPassword } = req.body;
-            await this.authService.resetPassword(token, newPassword);
+            await this._authService.resetPassword(token, newPassword);
             res.status(200).json({ success: true, message: "Password has been reset successfully." });
         } catch (error) {
             next(error);
@@ -141,7 +141,7 @@ export class AuthController {
             const { currentPassword, newPassword } = req.body;
             const userId = (req as AuthRequest).user?.userId;
             if (!userId) throw new Error("User not found");
-            await this.authService.changePassword(userId, currentPassword, newPassword);
+            await this._authService.changePassword(userId, currentPassword, newPassword);
             res.status(200).json({ success: true, message: "Password has been changed successfully." });
         } catch (error) {
             next(error);
@@ -154,7 +154,7 @@ export class AuthController {
             if (!token || typeof token !== "string") {
                 throw new Error("Token is required");
             }
-            await this.authService.validateResetToken(token);
+            await this._authService.validateResetToken(token);
             res.status(200).json({ success: true, message: "Token is valid" });
         } catch (error) {
             next(error);

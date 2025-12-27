@@ -11,14 +11,14 @@ import { CloudinaryService } from "./CloudinaryService";
 @injectable()
 export class ProfileService implements IProfileService {
     constructor(
-        @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-        @inject(TYPES.NotificationService) private notificationService: INotificationService,
-        @inject(TYPES.EmailService) private emailService: IEmailService,
+        @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
+        @inject(TYPES.NotificationService) private _notificationService: INotificationService,
+        @inject(TYPES.EmailService) private _emailService: IEmailService,
         @inject(TYPES.CloudinaryService) private cloudinaryService: CloudinaryService
     ) { }
 
     async getProfile(userId: string): Promise<IUserProfile> {
-        const user = await this.userRepository.findById(userId);
+        const user = await this._userRepository.findById(userId);
         if (!user) {
             throw new Error("User not found");
         }
@@ -26,22 +26,22 @@ export class ProfileService implements IProfileService {
     }
 
     async updateProfile(userId: string, data: Partial<IUserProfile>): Promise<IUserProfile> {
-        const updatedUser = await this.userRepository.updateProfile(userId, data);
+        const updatedUser = await this._userRepository.updateProfile(userId, data);
         if (!updatedUser) {
             throw new Error("User not found");
         }
 
         // Trigger notification
-        await this.notificationService.createNotification(userId, "Your profile has been updated successfully.");
+        await this._notificationService.createNotification(userId, "Your profile has been updated successfully.");
 
         // Send Email
-        this.emailService.sendProfileUpdateEmail(updatedUser.email, updatedUser.profile.firstName);
+        this._emailService.sendProfileUpdateEmail(updatedUser.email, updatedUser.profile.firstName);
 
         return updatedUser.profile;
     }
 
     async uploadAvatar(userId: string, file: Express.Multer.File): Promise<IUserProfile> {
-        const user = await this.userRepository.findById(userId);
+        const user = await this._userRepository.findById(userId);
         if (!user) {
             throw new Error("User not found");
         }
@@ -55,7 +55,7 @@ export class ProfileService implements IProfileService {
         const { url, publicId } = await this.cloudinaryService.uploadImage(file.buffer);
 
         // Update user profile
-        const updatedUser = await this.userRepository.updateProfile(userId, {
+        const updatedUser = await this._userRepository.updateProfile(userId, {
             avatarUrl: url,
             avatarPublicId: publicId,
         });

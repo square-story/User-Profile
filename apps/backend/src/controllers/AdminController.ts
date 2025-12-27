@@ -6,14 +6,14 @@ import { AuthRequest } from "../middlewares/authMiddleware";
 
 @injectable()
 export class AdminController {
-    constructor(@inject(TYPES.AdminService) private adminService: IAdminService) { }
+    constructor(@inject(TYPES.AdminService) private _adminService: IAdminService) { }
 
     /**
      * Get all users with filters and pagination
      */
     getAllUsers = async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
-            const result = await this.adminService.getUsers(req.query);
+            const result = await this._adminService.getUsers(req.query);
             res.json({
                 success: true,
                 data: {
@@ -36,7 +36,7 @@ export class AdminController {
      */
     getUserById = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const user = await this.adminService.getUserById(req.params.id);
+            const user = await this._adminService.getUserById(req.params.id);
             if (!user) {
                 return res.status(404).json({ success: false, message: "User not found" });
             }
@@ -51,7 +51,7 @@ export class AdminController {
      */
     updateUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
-            const updatedUser = await this.adminService.updateUser(req.user!.userId, req.params.id, req.body);
+            const updatedUser = await this._adminService.updateUser(req.user!.userId, req.params.id, req.body);
             res.json({ success: true, data: updatedUser, message: "User updated successfully" });
         } catch (error) {
             next(error);
@@ -63,7 +63,7 @@ export class AdminController {
      */
     deactivateUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
-            await this.adminService.deactivateUser(req.user!.userId, req.params.id);
+            await this._adminService.deactivateUser(req.user!.userId, req.params.id);
             res.json({ success: true, message: "User deactivated successfully" });
         } catch (error) {
             next(error);
@@ -75,7 +75,7 @@ export class AdminController {
      */
     reactivateUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
-            await this.adminService.reactivateUser(req.user!.userId, req.params.id);
+            await this._adminService.reactivateUser(req.user!.userId, req.params.id);
             res.json({ success: true, message: "User reactivated successfully" });
         } catch (error) {
             next(error);
@@ -88,7 +88,7 @@ export class AdminController {
     bulkDeactivate = async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
             const { userIds } = req.body;
-            await this.adminService.bulkDeactivateUsers(req.user!.userId, userIds);
+            await this._adminService.bulkDeactivateUsers(req.user!.userId, userIds);
             res.json({ success: true, message: "Users deactivated successfully" });
         } catch (error) {
             next(error);
@@ -101,7 +101,7 @@ export class AdminController {
     bulkReactivate = async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
             const { userIds } = req.body;
-            await this.adminService.bulkReactivateUsers(req.user!.userId, userIds);
+            await this._adminService.bulkReactivateUsers(req.user!.userId, userIds);
             res.json({ success: true, message: "Users reactivated successfully" });
         } catch (error) {
             next(error);
@@ -113,7 +113,7 @@ export class AdminController {
      */
     getAuditLogs = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const result = await this.adminService.getAuditLogs(req.query);
+            const result = await this._adminService.getAuditLogs(req.query);
             res.json({
                 success: true,
                 data: {
@@ -136,7 +136,7 @@ export class AdminController {
      */
     getUserLoginHistory = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const history = await this.adminService.getUserLoginHistory(req.params.id);
+            const history = await this._adminService.getUserLoginHistory(req.params.id);
             res.json({ success: true, data: history });
         } catch (error) {
             next(error);

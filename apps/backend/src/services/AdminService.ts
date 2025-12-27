@@ -2,7 +2,6 @@ import { injectable, inject } from "inversify";
 import { IAdminService } from "../interfaces/IAdminService";
 import { IAdminRepository } from "../interfaces/IAdminRepository";
 import { TYPES } from "../constants/types";
-import { IUser } from "../models/User";
 import { IAuditLog } from "../models/AuditLog";
 import { ILoginHistory } from "../models/LoginHistory";
 import mongoose from "mongoose";
@@ -12,7 +11,7 @@ import { UserMapper } from "../mappers/UserMapper";
 
 @injectable()
 export class AdminService implements IAdminService {
-    constructor(@inject(TYPES.AdminRepository) private adminRepository: IAdminRepository) { }
+    constructor(@inject(TYPES.AdminRepository) private _adminRepository: IAdminRepository) { }
 
     async getUsers(params: any): Promise<{ users: UserResponseDTO[]; total: number; page: number; limit: number }> {
         const page = parseInt(params.page as string) || 1;
@@ -60,20 +59,20 @@ export class AdminService implements IAdminService {
         }
 
         const [users, total] = await Promise.all([
-            this.adminRepository.findAllUsers(query, sortOptions, skip, limit),
-            this.adminRepository.countUsers(query)
+            this._adminRepository.findAllUsers(query, sortOptions, skip, limit),
+            this._adminRepository.countUsers(query)
         ]);
 
         return { users: UserMapper.toDTOs(users), total, page, limit };
     }
 
     async getUserById(userId: string): Promise<UserResponseDTO | null> {
-        const user = await this.adminRepository.findUserById(userId);
+        const user = await this._adminRepository.findUserById(userId);
         return user ? UserMapper.toDTO(user) : null;
     }
 
     async updateUser(adminId: string, userId: string, updateData: any): Promise<UserResponseDTO> {
-        const user = await this.adminRepository.findUserById(userId);
+        const user = await this._adminRepository.findUserById(userId);
         if (!user) throw new Error("User not found");
 
         const { role, isActive, status, firstName, lastName } = updateData;
@@ -84,10 +83,10 @@ export class AdminService implements IAdminService {
         if (firstName) updates["profile.firstName"] = firstName;
         if (lastName) updates["profile.lastName"] = lastName;
 
-        const updatedUser = await this.adminRepository.updateUser(userId, updates);
+        const updatedUser = await this._adminRepository.updateUser(userId, updates);
         if (!updatedUser) throw new Error("Failed to update user");
 
-        await this.adminRepository.createAuditLog({
+        await this._adminRepository.createAuditLog({
             action: "UPDATE_USER",
             resource: "Admin",
             adminId: new mongoose.Types.ObjectId(adminId),
@@ -100,15 +99,15 @@ export class AdminService implements IAdminService {
     }
 
     async deactivateUser(adminId: string, userId: string): Promise<void> {
-        const user = await this.adminRepository.findUserById(userId);
+        const user = await this._adminRepository.findUserById(userId);
         if (!user) throw new Error("User not found");
 
         if (user._id.toString() === adminId) {
             throw new Error("You cannot deactivate your own account");
         }
 
-        await this.adminRepository.updateUser(userId, { isActive: false, status: "inactive" });
-        await this.adminRepository.createAuditLog({
+        await this._adminRepository.updateUser(userId, { isActive: false, status: "inactive" });
+        await this._adminRepository.createAuditLog({
             action: "DEACTIVATE_USER",
             resource: "Admin",
             adminId: new mongoose.Types.ObjectId(adminId),
@@ -118,11 +117,11 @@ export class AdminService implements IAdminService {
     }
 
     async reactivateUser(adminId: string, userId: string): Promise<void> {
-        const user = await this.adminRepository.findUserById(userId);
+        const user = await this._adminRepository.findUserById(userId);
         if (!user) throw new Error("User not found");
 
-        await this.adminRepository.updateUser(userId, { isActive: true, status: "active" });
-        await this.adminRepository.createAuditLog({
+        await this._adminRepository.updateUser(userId, { isActive: true, status: "active" });
+        await this._adminRepository.createAuditLog({
             action: "REACTIVATE_USER",
             resource: "Admin",
             adminId: new mongoose.Types.ObjectId(adminId),
@@ -141,9 +140,9 @@ export class AdminService implements IAdminService {
             throw new Error("Cannot deactivate your own account");
         }
 
-        await this.adminRepository.updateManyUsers(filteredIds, { isActive: false, status: "inactive" });
+        await this._adminRepository.updateManyUsers(filteredIds, { isActive: false, status: "inactive" });
 
-        await this.adminRepository.createAuditLog({
+        await this._adminRepository.createAuditLog({
             action: "BULK_DEACTIVATE",
             resource: "Admin",
             adminId: new mongoose.Types.ObjectId(adminId),
@@ -155,9 +154,9 @@ export class AdminService implements IAdminService {
     async bulkReactivateUsers(adminId: string, userIds: string[]): Promise<void> {
         if (!userIds || userIds.length === 0) return;
 
-        await this.adminRepository.updateManyUsers(userIds, { isActive: true, status: "active" });
+        await this._adminRepository.updateManyUsers(userIds, { isActive: true, status: "active" });
 
-        await this.adminRepository.createAuditLog({
+        await this._adminRepository.createAuditLog({
             action: "BULK_REACTIVATE",
             resource: "Admin",
             adminId: new mongoose.Types.ObjectId(adminId),
@@ -194,7 +193,7 @@ export class AdminService implements IAdminService {
             // Depending on repository method, this might be slightly inefficient if we fetch huge docs, 
             // but for admin search it's usually acceptable.
             // Ideally we'd have a findUserIds method, but for now we reuse findAllUsers.
-            const matchingUsers = await this.adminRepository.findAllUsers(userSearchQuery, {}, 0, 100); // limit 100 for perf safety
+            const matchingUsers = await this._adminRepository.findAllUsers(userSearchQuery, {}, 0, 100); // limit 100 for perf safety
             const matchingUserIds = matchingUsers.map(u => u._id);
 
             query.$or = [
@@ -232,15 +231,15 @@ export class AdminService implements IAdminService {
         }
 
         const [logs, total] = await Promise.all([
-            this.adminRepository.findAllAuditLogs(query, sortOptions, skip, limit),
-            this.adminRepository.countAuditLogs(query)
+            this._adminRepository.findAllAuditLogs(query, sortOptions, skip, limit),
+            this._adminRepository.countAuditLogs(query)
         ]);
 
         return { logs, total, page, limit };
     }
 
     async getUserLoginHistory(userId: string): Promise<ILoginHistory[]> {
-        return await this.adminRepository.findLoginHistory(userId, 50);
+        return await this._adminRepository.findLoginHistory(userId, 50);
     }
 
     // Deprecated / Backwards Compat
@@ -251,7 +250,7 @@ export class AdminService implements IAdminService {
 
     async toggleUserStatus(adminId: string, userId: string): Promise<UserResponseDTO> {
         // Simple toggle implementation mapping to deactivate/reactivate logic
-        const user = await this.adminRepository.findUserById(userId);
+        const user = await this._adminRepository.findUserById(userId);
         if (!user) throw new Error("User not found");
 
         if (user.isActive) {
@@ -259,7 +258,7 @@ export class AdminService implements IAdminService {
         } else {
             await this.reactivateUser(adminId, userId);
         }
-        const updated = await this.adminRepository.findUserById(userId);
+        const updated = await this._adminRepository.findUserById(userId);
         return UserMapper.toDTO(updated!);
     }
 }

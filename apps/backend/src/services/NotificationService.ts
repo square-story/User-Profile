@@ -6,13 +6,13 @@ import { INotification } from "../models/Notification";
 
 @injectable()
 export class NotificationService implements INotificationService {
-    constructor(@inject(TYPES.NotificationRepository) private notificationRepository: INotificationRepository) { }
+    constructor(@inject(TYPES.NotificationRepository) private _notificationRepository: INotificationRepository) { }
 
     async createNotification(userId: string, message: string): Promise<void> {
-        await this.notificationRepository.create(userId, message);
+        await this._notificationRepository.create(userId, message);
     }
 
     async getNotifications(userId: string): Promise<INotification[]> {
-        return await this.notificationRepository.findByUser(userId);
+        return await this._notificationRepository.findByUser(userId);
     }
 }
