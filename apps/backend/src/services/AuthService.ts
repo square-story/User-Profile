@@ -14,15 +14,15 @@ import { ILoginActivityService } from "../interfaces/ILoginActivityService";
 @injectable()
 export class AuthService implements IAuthService {
     constructor(
-        @inject(TYPES.UserRepository) private userRepository: IUserRepository,
-        @inject(TYPES.EmailService) private emailService: IEmailService,
-        @inject(TYPES.LoginActivityService) private loginActivityService: ILoginActivityService
+        @inject(TYPES.UserRepository) private _userRepository: IUserRepository,
+        @inject(TYPES.EmailService) private _emailService: IEmailService,
+        @inject(TYPES.LoginActivityService) private _loginActivityService: ILoginActivityService
     ) { }
 
 
 
     async register(data: CreateUserDto): Promise<void> {
-        const existingUser = await this.userRepository.findByEmail(data.email);
+        const existingUser = await this._userRepository.findByEmail(data.email);
         if (existingUser) {
             throw new Error("User already exists");
         }
@@ -52,15 +52,15 @@ export class AuthService implements IAuthService {
             verificationAttempts: 0
         };
 
-        await this.userRepository.create(newUserInitial);
+        await this._userRepository.create(newUserInitial);
 
         // Send Email (Async, non-blocking)
-        await this.emailService.sendVerificationEmail(data.email, data.profile.firstName, verificationCode);
+        await this._emailService.sendVerificationEmail(data.email, data.profile.firstName, verificationCode);
     }
 
     async verifyEmail(email: string, code: string): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
         // Find user by email first to check attempts
-        const user = await this.userRepository.findByEmail(email);
+        const user = await this._userRepository.findByEmail(email);
         if (!user) {
             throw new Error("Invalid or expired verification code");
         }
@@ -77,25 +77,25 @@ export class AuthService implements IAuthService {
         // Check code and expiry
         if (user.verificationCode !== code || !user.verificationCodeExpires || user.verificationCodeExpires < new Date()) {
             // Increment attempts
-            await this.userRepository.updateUser(user._id as unknown as string, {
+            await this._userRepository.updateUser(user._id as unknown as string, {
                 verificationAttempts: (user.verificationAttempts || 0) + 1
             });
             throw new Error("Invalid or expired verification code");
         }
 
-        await this.userRepository.verifyUser(user._id as unknown as string);
+        await this._userRepository.verifyUser(user._id as unknown as string);
 
         const payload: UserPayload = { userId: user._id as unknown as string, email: user.email, role: user.role };
         const accessToken = AuthUtils.generateAccessToken(payload);
         const refreshToken = AuthUtils.generateRefreshToken(payload);
 
-        await this.userRepository.updateRefreshToken(user._id as unknown as string, refreshToken);
+        await this._userRepository.updateRefreshToken(user._id as unknown as string, refreshToken);
 
         return { accessToken, refreshToken, user };
     }
 
     async resendVerification(email: string): Promise<void> {
-        const user = await this.userRepository.findByEmail(email);
+        const user = await this._userRepository.findByEmail(email);
         if (!user) {
             // Silent failure or generic message to prevent enumeration (security best practice vs UX)
             // For this prompt's UX requirements, might stick to throwing if user not found, or just return.
@@ -119,18 +119,18 @@ export class AuthService implements IAuthService {
         const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
         const verificationCodeExpires = new Date(Date.now() + 3600000); // 1 hour
 
-        await this.userRepository.updateUser(user._id as unknown as string, {
+        await this._userRepository.updateUser(user._id as unknown as string, {
             verificationCode,
             verificationCodeExpires,
             verificationAttempts: 0,
             lastOtpSentAt: new Date()
         });
 
-        await this.emailService.sendVerificationEmail(user.email, user.profile.firstName, verificationCode);
+        await this._emailService.sendVerificationEmail(user.email, user.profile.firstName, verificationCode);
     }
 
     async login(credentials: { email: string; passwordHash: string }, clientInfo?: { ip: string, userAgent: string }): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
-        const user = await this.userRepository.findByEmail(credentials.email);
+        const user = await this._userRepository.findByEmail(credentials.email);
         if (!user) {
             throw new Error("Invalid credentials");
         }
@@ -154,15 +154,15 @@ export class AuthService implements IAuthService {
         const accessToken = AuthUtils.generateAccessToken(payload);
         const refreshToken = AuthUtils.generateRefreshToken(payload);
 
-        await this.userRepository.updateRefreshToken(user._id as unknown as string, refreshToken);
+        await this._userRepository.updateRefreshToken(user._id as unknown as string, refreshToken);
 
         // Send Email (Async, non-blocking)
         // Handle Login History & Notifications
         if (clientInfo) {
-            await this.loginActivityService.recordLogin(user._id as unknown as string, clientInfo.ip, clientInfo.userAgent);
+            await this._loginActivityService.recordLogin(user._id as unknown as string, clientInfo.ip, clientInfo.userAgent);
         } else {
             // Fallback if no info passed (legacy/test), maybe just log warning or skip
-            this.emailService.sendLoginAlertEmail(user.email, user.profile.firstName, "Unknown Device");
+            this._emailService.sendLoginAlertEmail(user.email, user.profile.firstName, "Unknown Device");
         }
 
         return { accessToken, refreshToken, user };
@@ -170,7 +170,7 @@ export class AuthService implements IAuthService {
 
     async refreshTokens(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
         const payload = AuthUtils.verifyRefreshToken(refreshToken);
-        const user = await this.userRepository.findById(payload.userId);
+        const user = await this._userRepository.findById(payload.userId);
 
         if (!user || user.refreshToken !== refreshToken) {
             throw new Error("Invalid refresh token");
@@ -184,17 +184,17 @@ export class AuthService implements IAuthService {
         const newAccessToken = AuthUtils.generateAccessToken(newPayload);
         const newRefreshToken = AuthUtils.generateRefreshToken(newPayload);
 
-        await this.userRepository.updateRefreshToken(user._id as unknown as string, newRefreshToken);
+        await this._userRepository.updateRefreshToken(user._id as unknown as string, newRefreshToken);
 
         return { accessToken: newAccessToken, refreshToken: newRefreshToken };
     }
 
     async logout(userId: string): Promise<void> {
-        await this.userRepository.updateRefreshToken(userId, null);
+        await this._userRepository.updateRefreshToken(userId, null);
     }
 
     async forgotPassword(email: string): Promise<void> {
-        const user = await this.userRepository.findByEmail(email);
+        const user = await this._userRepository.findByEmail(email);
         if (!user) {
             throw new Error("User with this email does not exist");
         }
@@ -208,15 +208,15 @@ export class AuthService implements IAuthService {
         const expires = new Date(Date.now() + 3600000); // 1 hour
 
         // Save the *hash* to the database
-        await this.userRepository.saveResetToken(user._id as unknown as string, resetTokenHash, expires);
+        await this._userRepository.saveResetToken(user._id as unknown as string, resetTokenHash, expires);
 
         // Send the *raw* token to the user
-        await this.emailService.sendPasswordResetEmail(user.email, user.profile.firstName, resetToken);
+        await this._emailService.sendPasswordResetEmail(user.email, user.profile.firstName, resetToken);
     }
 
     async validateResetToken(token: string): Promise<void> {
         const resetTokenHash = crypto.createHash("sha256").update(token).digest("hex");
-        const user = await this.userRepository.findByResetToken(resetTokenHash);
+        const user = await this._userRepository.findByResetToken(resetTokenHash);
         if (!user) {
             throw new Error("Invalid or expired reset token");
         }
@@ -226,7 +226,7 @@ export class AuthService implements IAuthService {
         // Hash the incoming token to find the user
         const resetTokenHash = crypto.createHash("sha256").update(token).digest("hex");
 
-        const user = await this.userRepository.findByResetToken(resetTokenHash);
+        const user = await this._userRepository.findByResetToken(resetTokenHash);
         if (!user) {
             throw new Error("Invalid or expired reset token");
         }
@@ -234,14 +234,14 @@ export class AuthService implements IAuthService {
         const passwordHash = await AuthUtils.hashPassword(newPassword);
 
         // Update password and clear reset token
-        await this.userRepository.updatePassword(user._id as unknown as string, passwordHash);
+        await this._userRepository.updatePassword(user._id as unknown as string, passwordHash);
 
         // Invalidate all existing sessions by clearing the refresh token
-        await this.userRepository.updateRefreshToken(user._id as unknown as string, null);
+        await this._userRepository.updateRefreshToken(user._id as unknown as string, null);
     }
 
     async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
-        const user = await this.userRepository.findById(userId);
+        const user = await this._userRepository.findById(userId);
         if (!user) {
             throw new Error("User not found");
         }
@@ -252,6 +252,6 @@ export class AuthService implements IAuthService {
         }
 
         const passwordHash = await AuthUtils.hashPassword(newPassword);
-        await this.userRepository.updatePassword(userId, passwordHash);
+        await this._userRepository.updatePassword(userId, passwordHash);
     }
 }

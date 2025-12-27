@@ -6,12 +6,12 @@ import { AuthRequest } from "../middlewares/authMiddleware";
 
 @injectable()
 export class ProfileController {
-    constructor(@inject(TYPES.ProfileService) private profileService: IProfileService) { }
+    constructor(@inject(TYPES.ProfileService) private _profileService: IProfileService) { }
 
     get = async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
             const userId = req.user!.userId;
-            const profile = await this.profileService.getProfile(userId);
+            const profile = await this._profileService.getProfile(userId);
             res.status(200).json({ success: true, data: profile });
         } catch (error) {
             next(error);
@@ -21,7 +21,7 @@ export class ProfileController {
     update = async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
             const userId = req.user!.userId;
-            const profile = await this.profileService.updateProfile(userId, req.body);
+            const profile = await this._profileService.updateProfile(userId, req.body);
             res.status(200).json({ success: true, data: profile });
         } catch (error) {
             next(error);
@@ -35,7 +35,7 @@ export class ProfileController {
                 res.status(400).json({ success: false, message: "No file uploaded" });
                 return;
             }
-            const profile = await this.profileService.uploadAvatar(userId, req.file);
+            const profile = await this._profileService.uploadAvatar(userId, req.file);
             res.status(200).json({ success: true, data: profile });
         } catch (error) {
             next(error);

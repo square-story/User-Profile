@@ -6,12 +6,12 @@ import { AuthRequest } from "../middlewares/authMiddleware";
 
 @injectable()
 export class NotificationController {
-    constructor(@inject(TYPES.NotificationService) private notificationService: INotificationService) { }
+    constructor(@inject(TYPES.NotificationService) private _notificationService: INotificationService) { }
 
     list = async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
             const userId = req.user!.userId;
-            const notifications = await this.notificationService.getNotifications(userId);
+            const notifications = await this._notificationService.getNotifications(userId);
             res.status(200).json({ success: true, data: notifications });
         } catch (error) {
             next(error);
