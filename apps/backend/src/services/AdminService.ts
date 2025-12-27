@@ -8,14 +8,15 @@ import mongoose from "mongoose";
 
 import { UserResponseDTO } from "../dtos/UserDTO";
 import { UserMapper } from "../mappers/UserMapper";
+import { UserQueryParams, UpdateUserRequest, AuditLogQueryParams, PaginatedResult, SortOptions } from "../types";
 
 @injectable()
 export class AdminService implements IAdminService {
     constructor(@inject(TYPES.AdminRepository) private _adminRepository: IAdminRepository) { }
 
-    async getUsers(params: any): Promise<{ users: UserResponseDTO[]; total: number; page: number; limit: number }> {
-        const page = parseInt(params.page as string) || 1;
-        const limit = parseInt(params.limit as string) || 10;
+    async getUsers(params: UserQueryParams): Promise<PaginatedResult<UserResponseDTO>> {
+        const page = typeof params.page === 'string' ? parseInt(params.page) : (params.page || 1);
+        const limit = typeof params.limit === 'string' ? parseInt(params.limit) : (params.limit || 10);
         const skip = (page - 1) * limit;
 
         const { search, role, status, sort } = params;
@@ -31,20 +32,19 @@ export class AdminService implements IAdminService {
 
         if (role) query.role = role;
 
-        if (status) { // 'active' or 'inactive'
+        if (status) {
             if (status === 'active') query.isActive = true;
             else if (status === 'inactive') query.isActive = false;
             else query.status = status;
         }
 
-        const sortOptions: any = {};
+        const sortOptions: SortOptions = {};
         if (sort) {
-            const sortFields = Array.isArray(sort) ? sort : sort.split(',');
+            const sortFields = Array.isArray(sort) ? sort : (sort as string).split(',');
             sortFields.forEach((fieldStr: string) => {
                 const [field, order] = fieldStr.split(':');
                 if (field) {
                     const sortOrder = order === 'desc' ? -1 : 1;
-                    // Map aliases
                     let dbField = field;
                     if (field === 'user') dbField = 'profile.firstName';
 
@@ -53,7 +53,6 @@ export class AdminService implements IAdminService {
             });
         }
 
-        // Default sort if none provided
         if (Object.keys(sortOptions).length === 0) {
             sortOptions.createdAt = -1;
         }
@@ -63,7 +62,7 @@ export class AdminService implements IAdminService {
             this._adminRepository.countUsers(query)
         ]);
 
-        return { users: UserMapper.toDTOs(users), total, page, limit };
+        return { data: UserMapper.toDTOs(users), total, page, limit };
     }
 
     async getUserById(userId: string): Promise<UserResponseDTO | null> {
@@ -71,7 +70,7 @@ export class AdminService implements IAdminService {
         return user ? UserMapper.toDTO(user) : null;
     }
 
-    async updateUser(adminId: string, userId: string, updateData: any): Promise<UserResponseDTO> {
+    async updateUser(adminId: string, userId: string, updateData: UpdateUserRequest): Promise<UserResponseDTO> {
         const user = await this._adminRepository.findUserById(userId);
         if (!user) throw new Error("User not found");
 
@@ -92,7 +91,7 @@ export class AdminService implements IAdminService {
             adminId: new mongoose.Types.ObjectId(adminId),
             targetUserId: new mongoose.Types.ObjectId(userId),
             details: `Updated user ${user.email}`,
-            changes: updateData
+            changes: updateData as Record<string, any>
         });
 
         return UserMapper.toDTO(updatedUser);
@@ -165,9 +164,9 @@ export class AdminService implements IAdminService {
         });
     }
 
-    async getAuditLogs(params: any): Promise<{ logs: IAuditLog[]; total: number; page: number; limit: number }> {
-        const page = parseInt(params.page as string) || 1;
-        const limit = parseInt(params.limit as string) || 20;
+    async getAuditLogs(params: AuditLogQueryParams): Promise<PaginatedResult<IAuditLog>> {
+        const page = typeof params.page === 'string' ? parseInt(params.page) : (params.page || 1);
+        const limit = typeof params.limit === 'string' ? parseInt(params.limit) : (params.limit || 20);
         const skip = (page - 1) * limit;
 
         const { search, action, userId, sort } = params;
@@ -177,10 +176,6 @@ export class AdminService implements IAdminService {
         if (userId) query.adminId = userId;
 
         if (search) {
-            // Two-step search: 
-            // 1. Find users matching the search string (email/name)
-            // 2. Find logs where adminId OR targetUserId matches those users, OR details contains the string
-
             const userSearchQuery = {
                 $or: [
                     { email: { $regex: search, $options: "i" } },
@@ -189,11 +184,7 @@ export class AdminService implements IAdminService {
                 ]
             };
 
-            // We need to get IDs only, but findAllUsers returns full objects. 
-            // Depending on repository method, this might be slightly inefficient if we fetch huge docs, 
-            // but for admin search it's usually acceptable.
-            // Ideally we'd have a findUserIds method, but for now we reuse findAllUsers.
-            const matchingUsers = await this._adminRepository.findAllUsers(userSearchQuery, {}, 0, 100); // limit 100 for perf safety
+            const matchingUsers = await this._adminRepository.findAllUsers(userSearchQuery, {}, 0, 100);
             const matchingUserIds = matchingUsers.map(u => u._id);
 
             query.$or = [
@@ -204,20 +195,16 @@ export class AdminService implements IAdminService {
             ];
         }
 
-        const sortOptions: any = {};
+        const sortOptions: SortOptions = {};
         if (sort) {
-            const sortFields = Array.isArray(sort) ? sort : sort.split(',');
+            const sortFields = Array.isArray(sort) ? sort : (sort as string).split(',');
             sortFields.forEach((fieldStr: string) => {
                 const [field, order] = fieldStr.split(':');
                 if (field) {
                     const sortOrder = order === 'desc' ? -1 : 1;
-                    // Map frontend fields to DB fields if needed
                     let dbField = field;
-                    if (field === 'admin') dbField = 'adminId'; // Sort by populated field might not work directly in simple find without aggregate, but let's try or default to createdAt
+                    if (field === 'admin') dbField = 'adminId';
 
-                    // MongoDB simple sort doesn't support sorting by populated fields easily. 
-                    // For 'admin', we might ignore or need aggregation. 
-                    // For now, let's support direct fields.
                     if (dbField !== 'adminId') {
                         sortOptions[dbField] = sortOrder;
                     }
@@ -225,7 +212,6 @@ export class AdminService implements IAdminService {
             });
         }
 
-        // Default sort
         if (Object.keys(sortOptions).length === 0) {
             sortOptions.createdAt = -1;
         }
@@ -235,30 +221,10 @@ export class AdminService implements IAdminService {
             this._adminRepository.countAuditLogs(query)
         ]);
 
-        return { logs, total, page, limit };
+        return { data: logs, total, page, limit };
     }
 
     async getUserLoginHistory(userId: string): Promise<ILoginHistory[]> {
         return await this._adminRepository.findLoginHistory(userId, 50);
-    }
-
-    // Deprecated / Backwards Compat
-    async searchUsers(filters: any, page: number, limit: number): Promise<{ users: UserResponseDTO[]; total: number }> {
-        const res = await this.getUsers({ ...filters, page, limit });
-        return { users: res.users, total: res.total };
-    }
-
-    async toggleUserStatus(adminId: string, userId: string): Promise<UserResponseDTO> {
-        // Simple toggle implementation mapping to deactivate/reactivate logic
-        const user = await this._adminRepository.findUserById(userId);
-        if (!user) throw new Error("User not found");
-
-        if (user.isActive) {
-            await this.deactivateUser(adminId, userId);
-        } else {
-            await this.reactivateUser(adminId, userId);
-        }
-        const updated = await this._adminRepository.findUserById(userId);
-        return UserMapper.toDTO(updated!);
     }
 }

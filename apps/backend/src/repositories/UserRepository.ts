@@ -5,7 +5,7 @@ import { CreateUserDto } from "../dtos/CreateUserDto";
 
 @injectable()
 export class UserRepository implements IUserRepository {
-    async create(data: CreateUserDto): Promise<IUser> {
+    async create(data: Partial<IUser>): Promise<IUser> {
         const user = new User(data);
         return await user.save();
     }
