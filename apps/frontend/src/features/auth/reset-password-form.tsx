@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "@/lib/error-utils";
 
 import * as React from "react";
 import { useForm } from "react-hook-form";
@@ -77,9 +78,7 @@ export function ResetPasswordForm() {
             toast.success("Password reset successfully");
             router.push("/login");
         } catch (err: unknown) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const error = err as any;
-            toast.error(error.response?.data?.message || "Failed to reset password. Token may be invalid or expired.");
+            toast.error(getErrorMessage(err) || "Failed to reset password. Token may be invalid or expired.");
         } finally {
             setIsLoading(false);
         }

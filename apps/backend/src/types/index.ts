@@ -14,6 +14,7 @@ export enum StatusCode {
     BadGateway = 502,
     ServiceUnavailable = 503,
     RateLimitExceeded = 429,
+    TooManyAttempts = 429,
 }
 
 export interface PaginationParams {

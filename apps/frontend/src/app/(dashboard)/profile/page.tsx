@@ -1,4 +1,6 @@
 "use client";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/error-utils";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -27,6 +29,7 @@ export default function ProfilePage() {
             setProfile(data);
         } catch (err) {
             console.error(err);
+            toast.error(getErrorMessage(err) || "Failed to load profile");
         }
     }, [user]);
 
@@ -41,6 +44,7 @@ export default function ProfilePage() {
             router.push("/login");
         } catch (err) {
             console.error(err);
+            toast.error(getErrorMessage(err) || "Failed to logout");
         }
     };
 

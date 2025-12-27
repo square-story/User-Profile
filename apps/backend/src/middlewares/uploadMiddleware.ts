@@ -13,7 +13,7 @@ export const uploadMiddleware = multer({
         if (file.mimetype.startsWith("image/")) {
             cb(null, true);
         } else {
-            cb(new AppError("Only images are allowed", StatusCode.BadRequest));
+            cb(new AppError("Only images are allowed", StatusCode.BadRequest, false));
         }
     },
 });

@@ -1,4 +1,5 @@
 "use client";
+import { getErrorMessage } from "@/lib/error-utils";
 
 import * as React from "react";
 import { useForm } from "react-hook-form";
@@ -42,9 +43,7 @@ export function ForgotPasswordForm() {
             toast.success("Reset link sent to the email");
             router.push("/login");
         } catch (err: unknown) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const error = err as any;
-            toast.error(error.response?.data?.message || "Something went wrong");
+            toast.error(getErrorMessage(err) || "Something went wrong");
         } finally {
             setIsLoading(false);
         }
