@@ -3,6 +3,7 @@ import { injectable, inject } from "inversify";
 import { TYPES } from "../constants/types";
 import { IAdminService } from "../interfaces/IAdminService";
 import { AuthRequest } from "../middlewares/authMiddleware";
+import { StatusCode } from "../types";
 
 @injectable()
 export class AdminController {
@@ -38,7 +39,7 @@ export class AdminController {
         try {
             const user = await this._adminService.getUserById(req.params.id);
             if (!user) {
-                return res.status(404).json({ success: false, message: "User not found" });
+                return res.status(StatusCode.NotFound).json({ success: false, message: "User not found" });
             }
             res.json({ success: true, data: user });
         } catch (error) {
@@ -52,7 +53,7 @@ export class AdminController {
     updateUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
             const updatedUser = await this._adminService.updateUser(req.user!.userId, req.params.id, req.body);
-            res.json({ success: true, data: updatedUser, message: "User updated successfully" });
+            res.status(StatusCode.Success).json({ success: true, data: updatedUser, message: "User updated successfully" });
         } catch (error) {
             next(error);
         }
@@ -64,7 +65,7 @@ export class AdminController {
     deactivateUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
             await this._adminService.deactivateUser(req.user!.userId, req.params.id);
-            res.json({ success: true, message: "User deactivated successfully" });
+            res.status(StatusCode.Success).json({ success: true, message: "User deactivated successfully" });
         } catch (error) {
             next(error);
         }
@@ -76,7 +77,7 @@ export class AdminController {
     reactivateUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
             await this._adminService.reactivateUser(req.user!.userId, req.params.id);
-            res.json({ success: true, message: "User reactivated successfully" });
+            res.status(StatusCode.Success).json({ success: true, message: "User reactivated successfully" });
         } catch (error) {
             next(error);
         }
@@ -89,7 +90,7 @@ export class AdminController {
         try {
             const { userIds } = req.body;
             await this._adminService.bulkDeactivateUsers(req.user!.userId, userIds);
-            res.json({ success: true, message: "Users deactivated successfully" });
+            res.status(StatusCode.Success).json({ success: true, message: "Users deactivated successfully" });
         } catch (error) {
             next(error);
         }
@@ -102,7 +103,7 @@ export class AdminController {
         try {
             const { userIds } = req.body;
             await this._adminService.bulkReactivateUsers(req.user!.userId, userIds);
-            res.json({ success: true, message: "Users reactivated successfully" });
+            res.status(StatusCode.Success).json({ success: true, message: "Users reactivated successfully" });
         } catch (error) {
             next(error);
         }
@@ -114,7 +115,7 @@ export class AdminController {
     getAuditLogs = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const result = await this._adminService.getAuditLogs(req.query);
-            res.json({
+            res.status(StatusCode.Success).json({
                 success: true,
                 data: {
                     logs: result.logs,
@@ -137,7 +138,7 @@ export class AdminController {
     getUserLoginHistory = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const history = await this._adminService.getUserLoginHistory(req.params.id);
-            res.json({ success: true, data: history });
+            res.status(StatusCode.Success).json({ success: true, data: history });
         } catch (error) {
             next(error);
         }
