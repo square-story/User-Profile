@@ -26,3 +26,5 @@ pnpm-debug.log*
 # Editor
 .vscode
 .idea
+apps/frontend/lint_log_final.txt
+apps/frontend/lint_log.txt

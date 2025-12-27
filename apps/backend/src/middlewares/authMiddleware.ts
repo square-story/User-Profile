@@ -7,7 +7,9 @@ export interface AuthRequest extends Request {
     user?: UserPayload;
 }
 
-import { User } from "../models/User";
+import { container } from "../container";
+import { TYPES } from "../constants/types";
+import { IUserRepository } from "../interfaces/IUserRepository";
 
 export const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
@@ -19,8 +21,12 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
     try {
         const decoded = AuthUtils.verifyAccessToken(token);
 
+        // Resolve dependency
+        const userRepository = container.get<IUserRepository>(TYPES.UserRepository);
+
         // Immediate blocking check
-        const user = await User.findById(decoded.userId).select("status");
+        const user = await userRepository.findById(decoded.userId);
+
         if (!user || user.status !== "active") {
             return res.status(403).json({ success: false, message: "Your account has been deactivated" });
         }

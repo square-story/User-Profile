@@ -6,11 +6,11 @@ import { config } from "../config";
 
 @injectable()
 export class NodemailerEmailService implements IEmailService {
-    private transporter;
+    private _transporter: nodemailer.Transporter;
 
     constructor() {
         // Use Ethereal for dev if no env vars, or standard SMTP
-        this.transporter = nodemailer.createTransport({
+        this._transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST || "smtp.ethereal.email",
             port: parseInt(process.env.SMTP_PORT || "587"),
             secure: parseInt(process.env.SMTP_PORT || "587") === 465, // true for 465, false for other ports
@@ -23,7 +23,7 @@ export class NodemailerEmailService implements IEmailService {
 
     private async sendEmail(to: string, subject: string, html: string) {
         try {
-            const info = await this.transporter.sendMail({
+            const info = await this._transporter.sendMail({
                 from: '"SecureApp" <no-reply@secureapp.com>',
                 to,
                 subject,
