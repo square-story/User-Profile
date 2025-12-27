@@ -27,7 +27,7 @@ export class AdminController {
                     },
                 },
             });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -42,7 +42,7 @@ export class AdminController {
                 return res.status(StatusCode.NotFound).json({ success: false, message: "User not found" });
             }
             res.json({ success: true, data: user });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -54,7 +54,7 @@ export class AdminController {
         try {
             const updatedUser = await this._adminService.updateUser(req.user!.userId, req.params.id, req.body);
             res.status(StatusCode.Success).json({ success: true, data: updatedUser, message: "User updated successfully" });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -66,7 +66,7 @@ export class AdminController {
         try {
             await this._adminService.deactivateUser(req.user!.userId, req.params.id);
             res.status(StatusCode.Success).json({ success: true, message: "User deactivated successfully" });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -78,7 +78,7 @@ export class AdminController {
         try {
             await this._adminService.reactivateUser(req.user!.userId, req.params.id);
             res.status(StatusCode.Success).json({ success: true, message: "User reactivated successfully" });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -91,7 +91,7 @@ export class AdminController {
             const { userIds } = req.body;
             await this._adminService.bulkDeactivateUsers(req.user!.userId, userIds);
             res.status(StatusCode.Success).json({ success: true, message: "Users deactivated successfully" });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -104,7 +104,7 @@ export class AdminController {
             const { userIds } = req.body;
             await this._adminService.bulkReactivateUsers(req.user!.userId, userIds);
             res.status(StatusCode.Success).json({ success: true, message: "Users reactivated successfully" });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -127,7 +127,7 @@ export class AdminController {
                     },
                 },
             });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -139,7 +139,7 @@ export class AdminController {
         try {
             const history = await this._adminService.getUserLoginHistory(req.params.id);
             res.status(StatusCode.Success).json({ success: true, data: history });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }

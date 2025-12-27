@@ -35,7 +35,6 @@ export class NodemailerEmailService implements IEmailService {
             }
         } catch (error) {
             console.error("Error sending email:", error);
-            // In a real job queue, we would retry here
         }
     }
 

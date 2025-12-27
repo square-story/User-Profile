@@ -7,6 +7,8 @@ import { IUserProfile } from "../models/User";
 
 import { IEmailService } from "../interfaces/IEmailService";
 import { CloudinaryService } from "./CloudinaryService";
+import { AppError } from "../utils/errorUtils";
+import { StatusCode } from "../types";
 
 @injectable()
 export class ProfileService implements IProfileService {
@@ -20,7 +22,7 @@ export class ProfileService implements IProfileService {
     async getProfile(userId: string): Promise<IUserProfile> {
         const user = await this._userRepository.findById(userId);
         if (!user) {
-            throw new Error("User not found");
+            throw new AppError("User not found", StatusCode.NotFound);
         }
         return user.profile;
     }
@@ -28,7 +30,7 @@ export class ProfileService implements IProfileService {
     async updateProfile(userId: string, data: Partial<IUserProfile>): Promise<IUserProfile> {
         const updatedUser = await this._userRepository.updateProfile(userId, data);
         if (!updatedUser) {
-            throw new Error("User not found");
+            throw new AppError("User not found", StatusCode.NotFound);
         }
 
         // Trigger notification
@@ -43,7 +45,7 @@ export class ProfileService implements IProfileService {
     async uploadAvatar(userId: string, file: Express.Multer.File): Promise<IUserProfile> {
         const user = await this._userRepository.findById(userId);
         if (!user) {
-            throw new Error("User not found");
+            throw new AppError("User not found", StatusCode.NotFound);
         }
 
         // Delete old avatar if exists
@@ -61,7 +63,7 @@ export class ProfileService implements IProfileService {
         });
 
         if (!updatedUser) {
-            throw new Error("User not found after update");
+            throw new AppError("User not found", StatusCode.NotFound);
         }
 
         return updatedUser.profile;

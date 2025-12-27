@@ -10,11 +10,12 @@ export interface AuthRequest extends Request {
 import { container } from "../container";
 import { TYPES } from "../constants/types";
 import { IUserRepository } from "../interfaces/IUserRepository";
+import { StatusCode } from "../types";
 
 export const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-        return res.status(401).json({ success: false, message: "No token provided" });
+        return res.status(StatusCode.Unauthorized).json({ success: false, message: "No token provided" });
     }
 
     const token = authHeader.split(" ")[1];
@@ -28,12 +29,12 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
         const user = await userRepository.findById(decoded.userId);
 
         if (!user || user.status !== "active") {
-            return res.status(403).json({ success: false, message: "Your account has been deactivated" });
+            return res.status(StatusCode.Forbidden).json({ success: false, message: "Your account has been deactivated" });
         }
 
         req.user = decoded;
         next();
     } catch (err) {
-        return res.status(401).json({ success: false, message: "Invalid token" });
+        return res.status(StatusCode.Unauthorized).json({ success: false, message: "Invalid token" });
     }
 };
