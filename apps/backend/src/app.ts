@@ -9,6 +9,7 @@ import notificationRouter from "./routes/notificationRoutes";
 import adminRouter from "./routes/adminRoutes";
 import { config } from "./config";
 import { StatusCode } from "./types";
+import { errorMiddleware } from "./middlewares/errorMiddleware";
 
 const app = express();
 app.use(helmet());
@@ -27,18 +28,7 @@ app.get("/health", (req, res) => {
     res.status(StatusCode.Success).json({ status: "ok", env: config.env });
 });
 
-// Custom Error Interface
-interface HttpError extends Error {
-    status?: number;
-}
-
 // Error Handling Middleware
-app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
-    console.error(err.stack);
-    res.status(err.status || StatusCode.InternalServerError).json({
-        success: false,
-        message: err.message || "Internal Server Error",
-    });
-});
+app.use(errorMiddleware);
 
 export default app;

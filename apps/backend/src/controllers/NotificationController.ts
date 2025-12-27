@@ -14,7 +14,7 @@ export class NotificationController {
             const userId = req.user!.userId;
             const notifications = await this._notificationService.getNotifications(userId);
             res.status(StatusCode.Success).json({ success: true, data: notifications });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     };

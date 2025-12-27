@@ -1,0 +1,18 @@
+import { Request, Response, NextFunction } from "express";
+import { normalizeError } from "../utils/errorUtils";
+
+export const errorMiddleware = (error: unknown, req: Request, res: Response, next: NextFunction) => {
+    const appError = normalizeError(error);
+
+    const LOG_ERRORS = process.env.NODE_ENV !== 'test';
+
+    if (LOG_ERRORS && !appError.isOperational) {
+        console.error("💥 UNEXPECTED ERROR:", appError);
+    }
+
+    res.status(appError.statusCode).json({
+        success: false,
+        message: appError.message,
+        ...(process.env.NODE_ENV === "development" && { stack: appError.stack }),
+    });
+};

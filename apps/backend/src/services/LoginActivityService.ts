@@ -27,7 +27,7 @@ export class LoginActivityService implements ILoginActivityService {
         // Strict check to trigger "New Device" alert
         const knownDevice = await LoginHistory.findOne({ userId, ipAddress: ip, userAgent });
 
-        if (!knownDevice) {
+        if (!knownDevice || !existingLogin) {
             const user = await this._userRepository.findById(userId);
             if (user) {
                 const deviceInfo = `${userAgent} (IP: ${ip})`;

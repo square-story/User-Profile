@@ -14,7 +14,7 @@ export class ProfileController {
             const userId = req.user!.userId;
             const profile = await this._profileService.getProfile(userId);
             res.status(StatusCode.Success).json({ success: true, data: profile });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     };
@@ -24,7 +24,7 @@ export class ProfileController {
             const userId = req.user!.userId;
             const profile = await this._profileService.updateProfile(userId, req.body);
             res.status(StatusCode.Success).json({ success: true, data: profile });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     };
@@ -38,7 +38,7 @@ export class ProfileController {
             }
             const profile = await this._profileService.uploadAvatar(userId, req.file);
             res.status(StatusCode.Success).json({ success: true, data: profile });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     };

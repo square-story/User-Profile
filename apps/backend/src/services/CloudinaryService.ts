@@ -1,6 +1,7 @@
 import { v2 as cloudinary } from "cloudinary";
 import { injectable } from "inversify";
 import { config } from "../config";
+import { getErrorMessage } from "../utils/errorUtils";
 
 @injectable()
 export class CloudinaryService {
@@ -30,8 +31,8 @@ export class CloudinaryService {
         if (!publicId) return;
         try {
             await cloudinary.uploader.destroy(publicId);
-        } catch (error) {
-            console.error("Error deleting image from Cloudinary:", error);
+        } catch (error: unknown) {
+            console.error("Error deleting image from Cloudinary:", getErrorMessage(error));
             // We usually don't want to throw here to avoid blocking the main operation
         }
     }

@@ -8,7 +8,9 @@ import mongoose from "mongoose";
 
 import { UserResponseDTO } from "../dtos/UserDTO";
 import { UserMapper } from "../mappers/UserMapper";
-import { UserQueryParams, UpdateUserRequest, AuditLogQueryParams, PaginatedResult, SortOptions } from "../types";
+import { UserQueryParams, UpdateUserRequest, AuditLogQueryParams, PaginatedResult, SortOptions, StatusCode } from "../types";
+
+import { AppError } from "../utils/errorUtils";
 
 @injectable()
 export class AdminService implements IAdminService {
@@ -72,7 +74,7 @@ export class AdminService implements IAdminService {
 
     async updateUser(adminId: string, userId: string, updateData: UpdateUserRequest): Promise<UserResponseDTO> {
         const user = await this._adminRepository.findUserById(userId);
-        if (!user) throw new Error("User not found");
+        if (!user) throw new AppError("User not found", StatusCode.NotFound);
 
         const { role, isActive, status, firstName, lastName } = updateData;
         const updates: any = {};
@@ -83,7 +85,7 @@ export class AdminService implements IAdminService {
         if (lastName) updates["profile.lastName"] = lastName;
 
         const updatedUser = await this._adminRepository.updateUser(userId, updates);
-        if (!updatedUser) throw new Error("Failed to update user");
+        if (!updatedUser) throw new AppError("Failed to update user", StatusCode.InternalServerError);
 
         await this._adminRepository.createAuditLog({
             action: "UPDATE_USER",
@@ -99,10 +101,10 @@ export class AdminService implements IAdminService {
 
     async deactivateUser(adminId: string, userId: string): Promise<void> {
         const user = await this._adminRepository.findUserById(userId);
-        if (!user) throw new Error("User not found");
+        if (!user) throw new AppError("User not found", StatusCode.NotFound);
 
         if (user._id.toString() === adminId) {
-            throw new Error("You cannot deactivate your own account");
+            throw new AppError("You cannot deactivate your own account", StatusCode.BadRequest);
         }
 
         await this._adminRepository.updateUser(userId, { isActive: false, status: "inactive" });
@@ -117,7 +119,7 @@ export class AdminService implements IAdminService {
 
     async reactivateUser(adminId: string, userId: string): Promise<void> {
         const user = await this._adminRepository.findUserById(userId);
-        if (!user) throw new Error("User not found");
+        if (!user) throw new AppError("User not found", StatusCode.NotFound);
 
         await this._adminRepository.updateUser(userId, { isActive: true, status: "active" });
         await this._adminRepository.createAuditLog({
@@ -136,7 +138,7 @@ export class AdminService implements IAdminService {
         const filteredIds = userIds.filter(id => id !== adminId);
 
         if (filteredIds.length === 0) {
-            throw new Error("Cannot deactivate your own account");
+            throw new AppError("Cannot deactivate your own account", StatusCode.BadRequest);
         }
 
         await this._adminRepository.updateManyUsers(filteredIds, { isActive: false, status: "inactive" });

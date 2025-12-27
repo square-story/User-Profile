@@ -27,7 +27,7 @@ export class AuthController {
                 success: true,
                 data: { accessToken: result.accessToken, user: result.user },
             });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     };
@@ -40,7 +40,7 @@ export class AuthController {
                 success: true,
                 message: "Registration successful. Please check your email for the verification code.",
             });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     };
@@ -61,7 +61,7 @@ export class AuthController {
                 success: true,
                 data: { accessToken: result.accessToken, user: result.user },
             });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     };
@@ -74,7 +74,7 @@ export class AuthController {
                 success: true,
                 message: "Verification code sent successfully.",
             });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     };
@@ -89,7 +89,7 @@ export class AuthController {
 
             res.clearCookie("refreshToken");
             res.status(StatusCode.Success).json({ success: true, message: "Logged out successfully" });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     };
@@ -112,7 +112,7 @@ export class AuthController {
                 success: true,
                 data: { accessToken: result.accessToken },
             });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     }
@@ -122,7 +122,7 @@ export class AuthController {
             const { email } = req.body;
             await this._authService.forgotPassword(email);
             res.status(StatusCode.Success).json({ success: true, message: "If that email exists, a reset link has been sent." });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     };
@@ -132,7 +132,7 @@ export class AuthController {
             const { token, newPassword } = req.body;
             await this._authService.resetPassword(token, newPassword);
             res.status(StatusCode.Success).json({ success: true, message: "Password has been reset successfully." });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     };
@@ -144,7 +144,7 @@ export class AuthController {
             if (!userId) throw new Error("User not found");
             await this._authService.changePassword(userId, currentPassword, newPassword);
             res.status(StatusCode.Success).json({ success: true, message: "Password has been changed successfully." });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     };
@@ -157,7 +157,7 @@ export class AuthController {
             }
             await this._authService.validateResetToken(token);
             res.status(StatusCode.Success).json({ success: true, message: "Token is valid" });
-        } catch (error) {
+        } catch (error: unknown) {
             next(error);
         }
     };

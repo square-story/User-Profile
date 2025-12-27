@@ -10,6 +10,8 @@ import { UserPayload } from "../interfaces/UserPayload";
 
 import { IEmailService } from "../interfaces/IEmailService";
 import { ILoginActivityService } from "../interfaces/ILoginActivityService";
+import { AppError } from "../utils/errorUtils";
+import { StatusCode } from "../types";
 
 @injectable()
 export class AuthService implements IAuthService {
@@ -24,7 +26,7 @@ export class AuthService implements IAuthService {
     async register(data: CreateUserDto): Promise<void> {
         const existingUser = await this._userRepository.findByEmail(data.email);
         if (existingUser) {
-            throw new Error("User already exists");
+            throw new AppError("User already exists", StatusCode.Conflict);
         }
 
         const passwordHash = await AuthUtils.hashPassword(data.passwordHash);
@@ -52,16 +54,16 @@ export class AuthService implements IAuthService {
         // Find user by email first to check attempts
         const user = await this._userRepository.findByEmail(email);
         if (!user) {
-            throw new Error("Invalid or expired verification code");
+            throw new AppError("Invalid or expired verification code", StatusCode.NotFound);
         }
 
         if (user.status === 'active') {
-            throw new Error("User already verified");
+            throw new AppError("User already verified", StatusCode.Conflict);
         }
 
         // Check attempts
         if (user.verificationAttempts && user.verificationAttempts >= 5) {
-            throw new Error("Too many failed attempts. Please request a new code.");
+            throw new AppError("Too many failed attempts. Please request a new code.", StatusCode.Forbidden);
         }
 
         // Check code and expiry
@@ -70,7 +72,7 @@ export class AuthService implements IAuthService {
             await this._userRepository.updateUser(user._id as unknown as string, {
                 verificationAttempts: (user.verificationAttempts || 0) + 1
             });
-            throw new Error("Invalid or expired verification code");
+            throw new AppError("Invalid or expired verification code", StatusCode.Forbidden);
         }
 
         await this._userRepository.verifyUser(user._id as unknown as string);
@@ -90,11 +92,11 @@ export class AuthService implements IAuthService {
             // Silent failure or generic message to prevent enumeration (security best practice vs UX)
             // For this prompt's UX requirements, might stick to throwing if user not found, or just return.
             // Given user story implies existing user context, throw specific if logical.
-            throw new Error("User not found");
+            throw new AppError("User not found", StatusCode.NotFound);
         }
 
         if (user.status === 'active') {
-            throw new Error("User already verified");
+            throw new AppError("User already verified", StatusCode.Conflict);
         }
 
         // Rate limit: 60s
@@ -102,7 +104,7 @@ export class AuthService implements IAuthService {
             const timeSinceLastOtp = Date.now() - user.lastOtpSentAt.getTime();
             if (timeSinceLastOtp < 60000) {
                 const remaining = Math.ceil((60000 - timeSinceLastOtp) / 1000);
-                throw new Error(`Please wait ${remaining} seconds before requesting a new code.`);
+                throw new AppError(`Please wait ${remaining} seconds before requesting a new code.`, StatusCode.Forbidden);
             }
         }
 
@@ -122,7 +124,7 @@ export class AuthService implements IAuthService {
     async login(credentials: { email: string; passwordHash: string }, clientInfo?: { ip: string, userAgent: string }): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
         const user = await this._userRepository.findByEmail(credentials.email);
         if (!user) {
-            throw new Error("Invalid credentials");
+            throw new AppError("Invalid credentials", StatusCode.NotFound);
         }
 
         if (user.status !== "active") {
@@ -130,14 +132,14 @@ export class AuthService implements IAuthService {
                 // If user has a verification code but is inactive, it means they are pending verification
                 // Or we can check a specific 'pending' status if we had one.
                 // Assuming status 'inactive' + existing code = pending verification.
-                throw new Error("User not verified");
+                throw new AppError("User not verified", StatusCode.Forbidden);
             }
-            throw new Error("Your account has been deactivated. Please contact support.");
+            throw new AppError("Your account has been deactivated. Please contact support.", StatusCode.Forbidden);
         }
 
         const isMatch = await AuthUtils.comparePassword(credentials.passwordHash, user.passwordHash);
         if (!isMatch) {
-            throw new Error("Invalid credentials");
+            throw new AppError("Invalid credentials", StatusCode.Forbidden);
         }
 
         const payload: UserPayload = { userId: user._id as unknown as string, email: user.email, role: user.role };
@@ -163,11 +165,11 @@ export class AuthService implements IAuthService {
         const user = await this._userRepository.findById(payload.userId);
 
         if (!user || user.refreshToken !== refreshToken) {
-            throw new Error("Invalid refresh token");
+            throw new AppError("Invalid refresh token", StatusCode.Forbidden);
         }
 
         if (user.status !== "active") {
-            throw new Error("Your account has been deactivated");
+            throw new AppError("Your account has been deactivated", StatusCode.Forbidden);
         }
 
         const newPayload: UserPayload = { userId: user._id as unknown as string, email: user.email, role: user.role };
@@ -186,7 +188,7 @@ export class AuthService implements IAuthService {
     async forgotPassword(email: string): Promise<void> {
         const user = await this._userRepository.findByEmail(email);
         if (!user) {
-            throw new Error("User with this email does not exist");
+            throw new AppError("User with this email does not exist", StatusCode.Forbidden);
         }
 
         // Generate a random reset token (32 bytes hex)
@@ -208,7 +210,7 @@ export class AuthService implements IAuthService {
         const resetTokenHash = crypto.createHash("sha256").update(token).digest("hex");
         const user = await this._userRepository.findByResetToken(resetTokenHash);
         if (!user) {
-            throw new Error("Invalid or expired reset token");
+            throw new AppError("Invalid or expired reset token", StatusCode.Forbidden);
         }
     }
 
@@ -218,7 +220,7 @@ export class AuthService implements IAuthService {
 
         const user = await this._userRepository.findByResetToken(resetTokenHash);
         if (!user) {
-            throw new Error("Invalid or expired reset token");
+            throw new AppError("Invalid or expired reset token", StatusCode.Forbidden);
         }
 
         const passwordHash = await AuthUtils.hashPassword(newPassword);
@@ -233,12 +235,12 @@ export class AuthService implements IAuthService {
     async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
         const user = await this._userRepository.findById(userId);
         if (!user) {
-            throw new Error("User not found");
+            throw new AppError("User not found", StatusCode.NotFound);
         }
 
         const isMatch = await AuthUtils.comparePassword(currentPassword, user.passwordHash);
         if (!isMatch) {
-            throw new Error("Invalid current password");
+            throw new AppError("Invalid current password", StatusCode.Forbidden);
         }
 
         const passwordHash = await AuthUtils.hashPassword(newPassword);

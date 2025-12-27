@@ -1,4 +1,6 @@
 import multer from "multer";
+import { AppError } from "../utils/errorUtils";
+import { StatusCode } from "../types";
 
 const storage = multer.memoryStorage();
 
@@ -11,7 +13,7 @@ export const uploadMiddleware = multer({
         if (file.mimetype.startsWith("image/")) {
             cb(null, true);
         } else {
-            cb(new Error("Only images are allowed"));
+            cb(new AppError("Only images are allowed", StatusCode.BadRequest));
         }
     },
 });
