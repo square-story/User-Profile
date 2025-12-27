@@ -3,6 +3,7 @@ import { injectable, inject } from "inversify";
 import { TYPES } from "../constants/types";
 import { INotificationService } from "../interfaces/INotificationService";
 import { AuthRequest } from "../middlewares/authMiddleware";
+import { StatusCode } from "../types";
 
 @injectable()
 export class NotificationController {
@@ -12,7 +13,7 @@ export class NotificationController {
         try {
             const userId = req.user!.userId;
             const notifications = await this._notificationService.getNotifications(userId);
-            res.status(200).json({ success: true, data: notifications });
+            res.status(StatusCode.Success).json({ success: true, data: notifications });
         } catch (error) {
             next(error);
         }
