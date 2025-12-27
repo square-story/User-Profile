@@ -3,7 +3,7 @@ import { injectable, inject } from "inversify";
 import { TYPES } from "../constants/types";
 import { IAdminService } from "../interfaces/IAdminService";
 import { AuthRequest } from "../middlewares/authMiddleware";
-import { StatusCode } from "../types";
+import { StatusCode, UserQueryParams, AuditLogQueryParams } from "../types";
 
 @injectable()
 export class AdminController {
@@ -14,11 +14,11 @@ export class AdminController {
      */
     getAllUsers = async (req: AuthRequest, res: Response, next: NextFunction) => {
         try {
-            const result = await this._adminService.getUsers(req.query);
+            const result = await this._adminService.getUsers(req.query as unknown as UserQueryParams);
             res.json({
                 success: true,
                 data: {
-                    users: result.users,
+                    users: result.data,
                     pagination: {
                         total: result.total,
                         page: result.page,
@@ -114,11 +114,11 @@ export class AdminController {
      */
     getAuditLogs = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const result = await this._adminService.getAuditLogs(req.query);
+            const result = await this._adminService.getAuditLogs(req.query as unknown as AuditLogQueryParams);
             res.status(StatusCode.Success).json({
                 success: true,
                 data: {
-                    logs: result.logs,
+                    logs: result.data,
                     pagination: {
                         total: result.total,
                         page: result.page,

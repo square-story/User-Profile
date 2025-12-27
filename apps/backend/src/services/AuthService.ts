@@ -34,17 +34,7 @@ export class AuthService implements IAuthService {
         const verificationCodeExpires = new Date(Date.now() + 3600000); // 1 hour
 
         // Create user with inactive status and verification code
-        // Note: The User model creates status: 'inactive' by default now, but we'll set the code fields explicitly
-        // We'll trust the repository create method to handle standard fields, but we might need to update it to accept code fields
-        // Or update the user immediately after creation. Since repository.create takes DTO, and DTO doesn't have these codes...
-        // We can pass them if we update the DTO/repository signature, OR we act like this:
-        // Ideally, we update the user right after creation or pass extra args.
-        // Let's assume the repository.create call can take extra fields or we update it.
-        // Actually, the simplest way without changing Repository interface too much is to Create then Update, OR
-        // Cast the object to any if the repository implementation is flexible (it uses `new User(data)`).
-        // Let's modify the data object by casting.
-
-        const newUserInitial: any = {
+        const newUserInitial: Partial<IUser> = {
             ...data,
             passwordHash,
             verificationCode,

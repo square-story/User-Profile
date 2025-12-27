@@ -1,21 +1,18 @@
 import { UserResponseDTO } from "../dtos/UserDTO";
 import { IAuditLog } from "../models/AuditLog";
 import { ILoginHistory } from "../models/LoginHistory";
+import { UserQueryParams, AuditLogQueryParams, UpdateUserRequest, PaginatedResult } from "../types";
 
 export interface IAdminService {
-    getUsers(params: any): Promise<{ users: UserResponseDTO[]; total: number; page: number; limit: number; }>;
+    getUsers(params: UserQueryParams): Promise<PaginatedResult<UserResponseDTO>>;
     getUserById(userId: string): Promise<UserResponseDTO | null>;
-    updateUser(adminId: string, userId: string, updateData: any): Promise<UserResponseDTO>;
+    updateUser(adminId: string, userId: string, updateData: UpdateUserRequest): Promise<UserResponseDTO>;
     deactivateUser(adminId: string, userId: string): Promise<void>;
     reactivateUser(adminId: string, userId: string): Promise<void>;
 
     bulkDeactivateUsers(adminId: string, userIds: string[]): Promise<void>;
     bulkReactivateUsers(adminId: string, userIds: string[]): Promise<void>;
 
-    getAuditLogs(params: any): Promise<{ logs: IAuditLog[]; total: number; page: number; limit: number; }>;
+    getAuditLogs(params: AuditLogQueryParams): Promise<PaginatedResult<IAuditLog>>;
     getUserLoginHistory(userId: string): Promise<ILoginHistory[]>;
-
-    // Deprecated compat
-    searchUsers(filters: any, page: number, limit: number): Promise<{ users: UserResponseDTO[]; total: number }>;
-    toggleUserStatus(adminId: string, userId: string): Promise<UserResponseDTO>;
 }
