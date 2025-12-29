@@ -1,6 +1,7 @@
 import { injectable, inject } from "inversify";
 import { IAdminService } from "../interfaces/IAdminService";
 import { IAdminRepository } from "../interfaces/IAdminRepository";
+import { IUser } from "../models/User";
 import { TYPES } from "../constants/types";
 import { IAuditLog } from "../models/AuditLog";
 import { ILoginHistory } from "../models/LoginHistory";
@@ -8,7 +9,7 @@ import mongoose from "mongoose";
 
 import { UserResponseDTO } from "../dtos/UserDTO";
 import { UserMapper } from "../mappers/UserMapper";
-import { UserQueryParams, UpdateUserRequest, AuditLogQueryParams, PaginatedResult, SortOptions, StatusCode } from "../types";
+import { UserQueryParams, UpdateUserRequest, AuditLogQueryParams, PaginatedResult, SortOptions, StatusCode, AppFilterQuery } from "../types";
 
 import { AppError } from "../utils/errorUtils";
 
@@ -22,7 +23,7 @@ export class AdminService implements IAdminService {
         const skip = (page - 1) * limit;
 
         const { search, role, status, sort } = params;
-        const query: any = {};
+        const query: AppFilterQuery<IUser> = {};
 
         if (search) {
             query.$or = [
@@ -77,7 +78,11 @@ export class AdminService implements IAdminService {
         if (!user) throw new AppError("User not found", StatusCode.NotFound);
 
         const { role, isActive, status, firstName, lastName } = updateData;
-        const updates: any = {};
+        const updates: any = {}; // Keeping any here for now as "profile.firstName" notation is not standard in Partial<IUser> without flattening. 
+        // Ideally we would build a nested object, but that changes the logic structure. 
+        // Let's use Record<string, unknown> which is safer than any.
+        // Actually, for "profile.firstName" to work with findByIdAndUpdate, it needs to be cast or typed as UpdateQuery.
+        // Let's rely on Mongoose's UpdateQuery but that might need explicit typing for dotted keys.
         if (role) updates.role = role;
         if (isActive !== undefined) updates.isActive = isActive;
         if (status) updates.status = status;
@@ -172,7 +177,7 @@ export class AdminService implements IAdminService {
         const skip = (page - 1) * limit;
 
         const { search, action, userId, sort } = params;
-        const query: any = {};
+        const query: AppFilterQuery<IAuditLog> = {};
 
         if (action) query.action = action;
         if (userId) query.adminId = userId;

@@ -2,9 +2,9 @@ import { NextFunction, Request, Response } from "express";
 import { ZodSchema } from "zod";
 
 interface IValidationSchemas {
-    body?: ZodSchema<any>;
-    query?: ZodSchema<any>;
-    params?: ZodSchema<any>;
+    body?: ZodSchema;
+    query?: ZodSchema;
+    params?: ZodSchema;
 }
 
 export const validateRequest = (schemas: IValidationSchemas) => {
@@ -19,7 +19,7 @@ export const validateRequest = (schemas: IValidationSchemas) => {
                 // req.query is a getter in some environments, so we mutate it.
                 // We clear existing keys and assign new ones to handle stripped fields.
                 for (const key in req.query) {
-                    delete (req.query as any)[key];
+                    delete (req.query as Record<string, unknown>)[key];
                 }
                 Object.assign(req.query, validatedQuery);
             }
@@ -27,7 +27,7 @@ export const validateRequest = (schemas: IValidationSchemas) => {
                 const validatedParams = await schemas.params.parseAsync(req.params);
                 // req.params can also be read-only/getter.
                 for (const key in req.params) {
-                    delete (req.params as any)[key];
+                    delete (req.params as Record<string, unknown>)[key];
                 }
                 Object.assign(req.params, validatedParams);
             }

@@ -1,4 +1,5 @@
 import { Response, NextFunction } from "express";
+import mongoose from "mongoose";
 import { AuthRequest } from "./authMiddleware";
 import { container } from "../container";
 import { TYPES } from "../constants/types";
@@ -16,7 +17,7 @@ export const auditMiddleware = (action: string, resource: string) => {
                 adminRepository.createAuditLog({
                     action,
                     resource,
-                    adminId: req.user.userId as any, // Cast to any to avoid strict ObjectId type issues if interface mismatches string
+                    adminId: new mongoose.Types.ObjectId(req.user.userId),
                     ipAddress,
                     userAgent,
                     details: `API Call to ${req.originalUrl}`,

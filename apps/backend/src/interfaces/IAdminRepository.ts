@@ -1,17 +1,17 @@
 import { IUser } from "../models/User";
 import { IAuditLog } from "../models/AuditLog";
 import { ILoginHistory } from "../models/LoginHistory";
-import { SortOptions, UserQueryParams } from "../types";
+import { SortOptions, UserQueryParams, AppFilterQuery } from "../types";
 
 export interface IAdminRepository {
-    findAllUsers(query: Record<string, any>, sort: SortOptions, skip: number, limit: number): Promise<IUser[]>;
-    countUsers(query: Record<string, any>): Promise<number>;
+    findAllUsers(query: AppFilterQuery<IUser>, sort: SortOptions, skip: number, limit: number): Promise<IUser[]>;
+    countUsers(query: AppFilterQuery<IUser>): Promise<number>;
     findUserById(userId: string): Promise<IUser | null>;
     updateUser(userId: string, data: Partial<IUser>): Promise<IUser | null>;
 
     createAuditLog(data: Partial<IAuditLog>): Promise<IAuditLog>;
-    findAllAuditLogs(query: Record<string, any>, sort: SortOptions, skip: number, limit: number): Promise<IAuditLog[]>;
-    countAuditLogs(query: Record<string, any>): Promise<number>;
+    findAllAuditLogs(query: AppFilterQuery<IAuditLog>, sort: SortOptions, skip: number, limit: number): Promise<IAuditLog[]>;
+    countAuditLogs(query: AppFilterQuery<IAuditLog>): Promise<number>;
 
     findLoginHistory(userId: string, limit: number): Promise<ILoginHistory[]>;
 
