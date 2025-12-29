@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "@/store/useAuthStore";
-import { toast } from "sonner";
+import { API_ROUTES } from "./api-routes";
 
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_BACKEND_URL + "/api",
@@ -27,10 +27,11 @@ api.interceptors.response.use(
         const originalRequest = error.config;
 
         if (error.response?.status === 403) {
-            const isAuthRoute = originalRequest.url?.includes("/auth/login") || originalRequest.url?.includes("/auth/verify");
+            const isAuthRoute =
+                originalRequest.url?.includes(API_ROUTES.AUTH.LOGIN) ||
+                originalRequest.url?.includes(API_ROUTES.AUTH.VERIFY_EMAIL);
             if (!isAuthRoute) {
                 useAuthStore.getState().logout();
-                toast.error("Your Account is not authorized to access this page");
             }
             return Promise.reject(error);
         }
@@ -38,7 +39,7 @@ api.interceptors.response.use(
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {
-                const { data } = await api.post("/auth/refresh");
+                const { data } = await api.post(API_ROUTES.AUTH.REFRESH);
                 const newAccessToken = data.data.accessToken;
 
                 // Update store with new token
