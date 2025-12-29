@@ -1,6 +1,8 @@
 import axios from "axios";
 import { useAuthStore } from "@/store/useAuthStore";
 import { API_ROUTES } from "./api-routes";
+import { toast } from "sonner";
+import { getErrorMessage } from "./error-utils";
 
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_BACKEND_URL + "/api",
@@ -32,8 +34,9 @@ api.interceptors.response.use(
                 originalRequest.url?.includes(API_ROUTES.AUTH.VERIFY_EMAIL);
             if (!isAuthRoute) {
                 useAuthStore.getState().logout();
+                toast.success("Your account is blocked. Please contact support.");
+                return Promise.reject(error);
             }
-            return Promise.reject(error);
         }
 
         if (error.response?.status === 401 && !originalRequest._retry) {
@@ -51,9 +54,15 @@ api.interceptors.response.use(
                 return api(originalRequest);
             } catch (refreshError) {
                 useAuthStore.getState().logout(); // Logout on refresh fail
+                toast.error("Session expired. Please login again.");
                 return Promise.reject(refreshError);
             }
         }
+
+        // Global error handler
+        const message = getErrorMessage(error);
+        toast.error(message);
+
         return Promise.reject(error);
     }
 );

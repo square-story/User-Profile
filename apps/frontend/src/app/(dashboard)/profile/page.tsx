@@ -37,9 +37,17 @@ export default function ProfilePage() {
         fetchProfile();
     }, [fetchProfile]);
 
-    const handleLogout = async () => {
+    const handleLogout = () => {
         try {
-            await authService.logout();
+            toast.promise(
+                authService.logout,
+                {
+                    loading: "Logging out...",
+                    success: "Logged out successfully",
+                    error: "Failed to logout",
+                }
+            );
+
             logout();
             router.push("/login");
         } catch (err) {

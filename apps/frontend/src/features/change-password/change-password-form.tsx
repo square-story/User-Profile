@@ -42,11 +42,17 @@ function ChangePasswordForm() {
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
         try {
             setLoading(true);
-            await authService.changePassword({
-                currentPassword: data.currentPassword,
-                newPassword: data.newPassword
-            });
-            toast.success("Password changed successfully");
+            toast.promise(
+                authService.changePassword({
+                    currentPassword: data.currentPassword,
+                    newPassword: data.newPassword
+                }),
+                {
+                    loading: "Changing password...",
+                    success: "Password changed successfully",
+                    error: "Failed to change password",
+                }
+            );
         } catch (err: unknown) {
             toast.error(getErrorMessage(err) || "Failed to change password");
             form.reset();

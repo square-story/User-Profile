@@ -44,9 +44,16 @@ export function ResetPasswordForm() {
             return;
         }
 
-        const verifyToken = async () => {
+        const verifyToken = () => {
             try {
-                await authService.validateResetToken(token);
+                toast.promise(
+                    authService.validateResetToken(token),
+                    {
+                        loading: "Verifying reset token...",
+                        success: "Reset token verified successfully",
+                        error: "Failed to verify reset token",
+                    }
+                );
                 setIsTokenValid(true);
             } catch {
                 toast.error("Invalid or expired reset token");
@@ -66,7 +73,7 @@ export function ResetPasswordForm() {
         },
     });
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
+    function onSubmit(values: z.infer<typeof formSchema>) {
         if (!token) {
             toast.error("Missing reset token. Please restart the process.");
             return;
@@ -74,8 +81,14 @@ export function ResetPasswordForm() {
 
         try {
             setIsLoading(true);
-            await authService.resetPassword(token, values.password);
-            toast.success("Password reset successfully");
+            toast.promise(
+                authService.resetPassword(token, values.password),
+                {
+                    loading: "Resetting password...",
+                    success: "Password reset successfully",
+                    error: "Failed to reset password",
+                }
+            );
             router.push("/login");
         } catch (err: unknown) {
             toast.error(getErrorMessage(err) || "Failed to reset password. Token may be invalid or expired.");
