@@ -69,7 +69,7 @@ export class AuthService implements IAuthService {
         // Check code and expiry
         if (user.verificationCode !== code || !user.verificationCodeExpires || user.verificationCodeExpires < new Date()) {
             // Increment attempts
-            await this._userRepository.updateUser(user._id as unknown as string, {
+            await this._userRepository.update(user._id as unknown as string, {
                 verificationAttempts: (user.verificationAttempts || 0) + 1
             });
             throw new AppError("Invalid or expired verification code", StatusCode.BadRequest);
@@ -111,7 +111,7 @@ export class AuthService implements IAuthService {
         const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
         const verificationCodeExpires = new Date(Date.now() + 3600000); // 1 hour
 
-        await this._userRepository.updateUser(user._id as unknown as string, {
+        await this._userRepository.update(user._id as unknown as string, {
             verificationCode,
             verificationCodeExpires,
             verificationAttempts: 0,

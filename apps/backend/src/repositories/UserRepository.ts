@@ -1,21 +1,17 @@
 import { injectable } from "inversify";
+import { BaseRepository } from "./BaseRepository";
 import { IUserRepository } from "../interfaces/IUserRepository";
 import { User, IUser } from "../models/User";
 import { CreateUserDto } from "../dtos/CreateUserDto";
 
 @injectable()
-export class UserRepository implements IUserRepository {
-    async create(data: Partial<IUser>): Promise<IUser> {
-        const user = new User(data);
-        return await user.save();
+export class UserRepository extends BaseRepository<IUser> implements IUserRepository {
+    constructor() {
+        super(User);
     }
 
     async findByEmail(email: string): Promise<IUser | null> {
-        return await User.findOne({ email });
-    }
-
-    async findById(id: string): Promise<IUser | null> {
-        return await User.findById(id);
+        return await this.model.findOne({ email });
     }
 
     async updateProfile(id: string, data: Partial<IUser["profile"]>): Promise<IUser | null> {
@@ -28,26 +24,26 @@ export class UserRepository implements IUserRepository {
         }
 
 
-        return await User.findByIdAndUpdate(id, { $set: updateQuery }, { new: true });
+        return await this.model.findByIdAndUpdate(id, { $set: updateQuery }, { new: true });
     }
 
     async updateRefreshToken(id: string, refreshToken: string | null): Promise<void> {
-        await User.findByIdAndUpdate(id, { refreshToken });
+        await this.model.findByIdAndUpdate(id, { refreshToken });
     }
 
     async saveResetToken(id: string, token: string, expires: Date): Promise<void> {
-        await User.findByIdAndUpdate(id, { resetPasswordToken: token, resetPasswordExpires: expires });
+        await this.model.findByIdAndUpdate(id, { resetPasswordToken: token, resetPasswordExpires: expires });
     }
 
     async findByResetToken(token: string): Promise<IUser | null> {
-        return await User.findOne({
+        return await this.model.findOne({
             resetPasswordToken: token,
             resetPasswordExpires: { $gt: new Date() },
         });
     }
 
     async updatePassword(id: string, passwordHash: string): Promise<void> {
-        await User.findByIdAndUpdate(id, {
+        await this.model.findByIdAndUpdate(id, {
             passwordHash,
             resetPasswordToken: undefined,
             resetPasswordExpires: undefined,
@@ -55,7 +51,7 @@ export class UserRepository implements IUserRepository {
     }
 
     async findByVerificationCode(email: string, code: string): Promise<IUser | null> {
-        return await User.findOne({
+        return await this.model.findOne({
             email,
             verificationCode: code,
             verificationCodeExpires: { $gt: new Date() },
@@ -63,7 +59,7 @@ export class UserRepository implements IUserRepository {
     }
 
     async verifyUser(id: string): Promise<void> {
-        await User.findByIdAndUpdate(id, {
+        await this.model.findByIdAndUpdate(id, {
             status: "active",
             verificationCode: undefined,
             verificationCodeExpires: undefined,
@@ -71,7 +67,4 @@ export class UserRepository implements IUserRepository {
         });
     }
 
-    async updateUser(id: string, data: Partial<IUser>): Promise<IUser | null> {
-        return await User.findByIdAndUpdate(id, data, { new: true });
-    }
 }
