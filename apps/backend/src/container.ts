@@ -1,50 +1,54 @@
 import { Container } from "inversify";
 import { TYPES } from "./constants/types";
-
+import { AdminController } from "./controllers/AdminController";
 // Import Controllers
 import { AuthController } from "./controllers/AuthController";
-import { ProfileController } from "./controllers/ProfileController";
 import { NotificationController } from "./controllers/NotificationController";
-import { IAdminRepository } from "./interfaces/IAdminRepository";
+import { ProfileController } from "./controllers/ProfileController";
+import type { IAdminRepository } from "./interfaces/IAdminRepository";
+import type { IAdminService } from "./interfaces/IAdminService";
+// Interfaces
+import type { IAuthService } from "./interfaces/IAuthService";
+import type { IEmailService } from "./interfaces/IEmailService";
+import type { ILoginActivityService } from "./interfaces/ILoginActivityService";
+import type { INotificationRepository } from "./interfaces/INotificationRepository";
+import type { INotificationService } from "./interfaces/INotificationService";
+import type { IProfileService } from "./interfaces/IProfileService";
+import type { IUserRepository } from "./interfaces/IUserRepository";
 import { AdminRepository } from "./repositories/AdminRepository";
-import { IAdminService } from "./interfaces/IAdminService";
-import { AdminService } from "./services/AdminService";
-import { AdminController } from "./controllers/AdminController";
-import { IEmailService } from "./interfaces/IEmailService";
-import { NodemailerEmailService } from "./services/NodemailerEmailService";
-import { ILoginActivityService } from "./interfaces/ILoginActivityService";
-import { LoginActivityService } from "./services/LoginActivityService";
-
-// Import Services
-import { AuthService } from "./services/AuthService";
-import { ProfileService } from "./services/ProfileService";
-import { NotificationService } from "./services/NotificationService";
-import { CloudinaryService } from "./services/CloudinaryService";
-
+import { NotificationRepository } from "./repositories/NotificationRepository";
 // Import Repositories
 import { UserRepository } from "./repositories/UserRepository";
-import { NotificationRepository } from "./repositories/NotificationRepository";
-
-// Interfaces
-import { IAuthService } from "./interfaces/IAuthService";
-import { IProfileService } from "./interfaces/IProfileService";
-import { INotificationService } from "./interfaces/INotificationService";
-import { IUserRepository } from "./interfaces/IUserRepository";
-import { INotificationRepository } from "./interfaces/INotificationRepository";
+import { AdminService } from "./services/AdminService";
+// Import Services
+import { AuthService } from "./services/AuthService";
+import { CloudinaryService } from "./services/CloudinaryService";
+import { LoginActivityService } from "./services/LoginActivityService";
+import { NodemailerEmailService } from "./services/NodemailerEmailService";
+import { NotificationService } from "./services/NotificationService";
+import { ProfileService } from "./services/ProfileService";
 
 const container = new Container();
 
 // Repositories
 container.bind<IUserRepository>(TYPES.UserRepository).to(UserRepository);
-container.bind<INotificationRepository>(TYPES.NotificationRepository).to(NotificationRepository);
+container
+  .bind<INotificationRepository>(TYPES.NotificationRepository)
+  .to(NotificationRepository);
 
 // Services
 container.bind<IAuthService>(TYPES.AuthService).to(AuthService);
 container.bind<IProfileService>(TYPES.ProfileService).to(ProfileService);
-container.bind<INotificationService>(TYPES.NotificationService).to(NotificationService);
+container
+  .bind<INotificationService>(TYPES.NotificationService)
+  .to(NotificationService);
 container.bind<IEmailService>(TYPES.EmailService).to(NodemailerEmailService);
-container.bind<CloudinaryService>(TYPES.CloudinaryService).to(CloudinaryService);
-container.bind<ILoginActivityService>(TYPES.LoginActivityService).to(LoginActivityService);
+container
+  .bind<CloudinaryService>(TYPES.CloudinaryService)
+  .to(CloudinaryService);
+container
+  .bind<ILoginActivityService>(TYPES.LoginActivityService)
+  .to(LoginActivityService);
 
 // Admin Module Bindings
 container.bind<IAdminRepository>(TYPES.AdminRepository).to(AdminRepository);
@@ -53,7 +57,11 @@ container.bind<AdminController>(TYPES.AdminController).to(AdminController);
 
 // Controllers
 container.bind<AuthController>(TYPES.AuthController).to(AuthController);
-container.bind<ProfileController>(TYPES.ProfileController).to(ProfileController);
-container.bind<NotificationController>(TYPES.NotificationController).to(NotificationController);
+container
+  .bind<ProfileController>(TYPES.ProfileController)
+  .to(ProfileController);
+container
+  .bind<NotificationController>(TYPES.NotificationController)
+  .to(NotificationController);
 
 export { container };
