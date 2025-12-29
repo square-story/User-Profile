@@ -1,11 +1,13 @@
 import { Router } from "express";
-import { container } from "../container";
 import { TYPES } from "../constants/types";
-import { NotificationController } from "../controllers/NotificationController";
+import { container } from "../container";
+import type { NotificationController } from "../controllers/NotificationController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 
 const notificationRouter = Router();
-const notificationController = container.get<NotificationController>(TYPES.NotificationController);
+const notificationController = container.get<NotificationController>(
+  TYPES.NotificationController,
+);
 
 notificationRouter.get("/", authMiddleware, notificationController.list);
 

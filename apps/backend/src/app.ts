@@ -1,15 +1,15 @@
 import "reflect-metadata";
-import express, { Request, Response, NextFunction } from "express";
-import cors from "cors";
-import helmet from "helmet";
 import cookieParser from "cookie-parser";
-import authRouter from "./routes/authRoutes";
-import profileRouter from "./routes/profileRoutes";
-import notificationRouter from "./routes/notificationRoutes";
-import adminRouter from "./routes/adminRoutes";
+import cors from "cors";
+import express from "express";
+import helmet from "helmet";
 import { config } from "./config";
-import { StatusCode } from "./types";
 import { errorMiddleware } from "./middlewares/errorMiddleware";
+import adminRouter from "./routes/adminRoutes";
+import authRouter from "./routes/authRoutes";
+import notificationRouter from "./routes/notificationRoutes";
+import profileRouter from "./routes/profileRoutes";
+import { StatusCode } from "./types";
 
 const app = express();
 app.use(helmet());
@@ -24,8 +24,8 @@ app.use("/api/notifications", notificationRouter);
 app.use("/api/admin", adminRouter);
 
 // Health Check
-app.get("/health", (req, res) => {
-    res.status(StatusCode.Success).json({ status: "ok", env: config.env });
+app.get("/health", (_req, res) => {
+  res.status(StatusCode.Success).json({ status: "ok", env: config.env });
 });
 
 // Error Handling Middleware

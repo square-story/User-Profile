@@ -1,5 +1,5 @@
 export const emailTemplates = {
-    verification: (name: string, code: string) => `
+  verification: (name: string, code: string) => `
         <div style="font-family: Arial, sans-serif; padding: 20px;">
             <h2>Verify Your Email</h2>
             <p>Hi ${name},</p>
@@ -8,7 +8,7 @@ export const emailTemplates = {
             <p>If you didn't request this, you can ignore this email.</p>
         </div>
     `,
-    passwordReset: (name: string, token: string) => `
+  passwordReset: (name: string, token: string) => `
         <div style="font-family: Arial, sans-serif; padding: 20px;">
             <h2>Reset Your Password</h2>
             <p>Hi ${name},</p>
@@ -17,7 +17,7 @@ export const emailTemplates = {
             <p>This link expires in 1 hour.</p>
         </div>
     `,
-    loginAlert: (name: string, deviceInfo: string) => `
+  loginAlert: (name: string, deviceInfo: string) => `
         <div style="font-family: Arial, sans-serif; padding: 20px;">
             <h2>New Login Detected</h2>
             <p>Hi ${name},</p>
@@ -26,12 +26,12 @@ export const emailTemplates = {
             <p>If this was you, you can ignore this email. If not, please reset your password immediately.</p>
         </div>
     `,
-    profileUpdate: (name: string) => `
+  profileUpdate: (name: string) => `
         <div style="font-family: Arial, sans-serif; padding: 20px;">
             <h2>Profile Updated</h2>
             <p>Hi ${name},</p>
             <p>Your profile information has been successfully updated.</p>
             <p>If you didn't make these changes, please contact support.</p>
         </div>
-    `
+    `,
 };
