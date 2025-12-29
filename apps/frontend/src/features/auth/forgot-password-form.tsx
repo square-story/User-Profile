@@ -36,11 +36,17 @@ export function ForgotPasswordForm() {
         },
     });
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
+    function onSubmit(values: z.infer<typeof formSchema>) {
         try {
             setIsLoading(true);
-            await authService.forgotPassword(values.email);
-            toast.success("Reset link sent to the email");
+            toast.promise(
+                authService.forgotPassword(values.email),
+                {
+                    loading: "Sending reset link...",
+                    success: "Reset link sent to the email",
+                    error: "Failed to send reset link",
+                }
+            );
             router.push("/login");
         } catch (err: unknown) {
             toast.error(getErrorMessage(err) || "Something went wrong");

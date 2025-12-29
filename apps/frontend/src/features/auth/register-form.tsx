@@ -42,7 +42,7 @@ export function RegisterForm() {
         },
     });
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
+    function onSubmit(values: z.infer<typeof formSchema>) {
         setError(null);
         setLoading(true);
         try {
@@ -55,7 +55,14 @@ export function RegisterForm() {
                 }
             };
 
-            await authService.register(payload);
+            toast.promise(
+                authService.register(payload),
+                {
+                    loading: "Registering...",
+                    success: "Registered successfully",
+                    error: "Failed to register",
+                }
+            );
             router.push(`/register/verify?email=${encodeURIComponent(values.email)}`);
         } catch (err: unknown) {
             const message = getErrorMessage(err);

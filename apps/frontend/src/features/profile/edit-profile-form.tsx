@@ -38,11 +38,17 @@ export function EditProfileForm({ initialData, onUpdate }: { initialData: IUser[
         },
     });
 
-    async function onSubmit(values: z.infer<typeof formSchema>) {
+    function onSubmit(values: z.infer<typeof formSchema>) {
         try {
             setLoading(true);
-            await profileService.updateProfile(values);
-            toast.success("Profile updated successfully");
+            toast.promise(
+                profileService.updateProfile(values),
+                {
+                    loading: "Updating profile...",
+                    success: "Profile updated successfully",
+                    error: "Failed to update profile",
+                }
+            );
             onUpdate();
         } catch (err: unknown) {
             toast.error(getErrorMessage(err) || "Failed to update profile");
