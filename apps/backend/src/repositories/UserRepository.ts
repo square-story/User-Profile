@@ -19,10 +19,13 @@ export class UserRepository implements IUserRepository {
     }
 
     async updateProfile(id: string, data: Partial<IUser["profile"]>): Promise<IUser | null> {
-        const updateQuery: Record<string, any> = {};
-        Object.keys(data).forEach((key) => {
-            updateQuery[`profile.${key}`] = (data as any)[key];
-        });
+        const updateQuery: Record<string, unknown> = {};
+        for (const key of Object.keys(data)) {
+            const typedKey = key as keyof typeof data;
+            if (data[typedKey] !== undefined) {
+                updateQuery[`profile.${key}`] = data[typedKey];
+            }
+        }
 
 
         return await User.findByIdAndUpdate(id, { $set: updateQuery }, { new: true });

@@ -8,7 +8,7 @@ export interface IAuditLog extends Document {
     ipAddress?: string;
     userAgent?: string;
     details?: string;
-    changes?: Record<string, any>; // Store before/after snapshots or changed fields
+    changes?: Record<string, unknown>;
     createdAt: Date;
 }
 

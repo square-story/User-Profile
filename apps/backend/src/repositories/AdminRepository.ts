@@ -3,12 +3,12 @@ import { IAdminRepository } from "../interfaces/IAdminRepository";
 import { User, IUser } from "../models/User";
 import { AuditLog, IAuditLog } from "../models/AuditLog";
 import { LoginHistory, ILoginHistory } from "../models/LoginHistory";
-import { SortOptions, UserQueryParams } from "../types";
+import { SortOptions, UserQueryParams, AppFilterQuery } from "../types";
 
 @injectable()
 export class AdminRepository implements IAdminRepository {
 
-    async findAllUsers(query: Record<string, any>, sort: SortOptions, skip: number, limit: number): Promise<IUser[]> {
+    async findAllUsers(query: AppFilterQuery<IUser>, sort: SortOptions, skip: number, limit: number): Promise<IUser[]> {
         return await User.find(query)
             .select("-passwordHash")
             .sort(sort)
@@ -17,7 +17,7 @@ export class AdminRepository implements IAdminRepository {
             .exec();
     }
 
-    async countUsers(query: Record<string, any>): Promise<number> {
+    async countUsers(query: AppFilterQuery<IUser>): Promise<number> {
         return await User.countDocuments(query).exec();
     }
 
@@ -37,7 +37,7 @@ export class AdminRepository implements IAdminRepository {
         return await AuditLog.create(data);
     }
 
-    async findAllAuditLogs(query: Record<string, any>, sort: SortOptions, skip: number, limit: number): Promise<IAuditLog[]> {
+    async findAllAuditLogs(query: AppFilterQuery<IAuditLog>, sort: SortOptions, skip: number, limit: number): Promise<IAuditLog[]> {
         return await AuditLog.find(query)
             .populate("adminId", "email profile.firstName profile.lastName")
             .sort(sort)
@@ -46,7 +46,7 @@ export class AdminRepository implements IAdminRepository {
             .exec();
     }
 
-    async countAuditLogs(query: Record<string, any>): Promise<number> {
+    async countAuditLogs(query: AppFilterQuery<IAuditLog>): Promise<number> {
         return await AuditLog.countDocuments(query).exec();
     }
 
@@ -60,7 +60,7 @@ export class AdminRepository implements IAdminRepository {
     // Deprecated / wrapper for compatibility
     async searchUsers(filters: UserQueryParams, page: number, limit: number): Promise<{ users: IUser[]; total: number }> {
         const skip = (page - 1) * limit;
-        const query: Record<string, any> = {};
+        const query: AppFilterQuery<IUser> = {};
 
         if (filters.search) {
             query.$or = [

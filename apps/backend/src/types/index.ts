@@ -62,3 +62,5 @@ export interface PaginatedResultWithLegacy<T> {
     page: number;
     limit: number;
 }
+
+export type AppFilterQuery<T> = { [P in keyof T]?: any } & Record<string, any>;
