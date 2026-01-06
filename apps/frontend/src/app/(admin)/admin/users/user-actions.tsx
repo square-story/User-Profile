@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { MoreHorizontal, Loader2 } from "lucide-react";
+import { MoreHorizontal, Loader2, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -53,6 +53,7 @@ import { Separator } from "@/components/ui/separator";
 import { IUser } from "@/types";
 import { useUpdateUser, useDeactivateUser, useReactivateUser } from "@/hooks/use-users";
 import { Row } from "@tanstack/react-table";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface UserActionsProps {
     row: Row<IUser>;
@@ -66,6 +67,7 @@ const formSchema = z.object({
 
 export function UserActions({ row }: UserActionsProps) {
     const user = row.original;
+    const { confirm, ConfirmDialog } = useConfirm()
     const [openEdit, setOpenEdit] = useState(false);
     const [openView, setOpenView] = useState(false);
     const { mutate: updateUser, isPending: isUpdating } = useUpdateUser();
@@ -92,7 +94,20 @@ export function UserActions({ row }: UserActionsProps) {
         );
     };
 
-    const handleToggleStatus = () => {
+    const handleToggleStatus = async () => {
+        const action = user.isActive ? "Deactivate" : "Activate";
+
+        const confirmed = await confirm({
+            title: `${action} User`,
+            description: `Are you sure you want to ${action.toLowerCase()} this user? ${user.isActive ? "They will no longer be able to log in." : "They will regain access to the platform."}`,
+            confirmText: action,
+            cancelText: "Cancel",
+            confirmButtonClassName: user.isActive ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : "bg-primary text-primary-foreground hover:bg-primary/90",
+            icon: user.isActive ? <Trash2 className="text-red-600" /> : undefined,
+        })
+
+        if (!confirmed) return;
+
         if (user.isActive) {
             deactivateUser(user.id);
         } else {
@@ -126,9 +141,14 @@ export function UserActions({ row }: UserActionsProps) {
                         disabled={isDeactivating || isReactivating}
                     >
                         {user.isActive ? "Deactivate" : "Activate"}
+                        {(isDeactivating || isReactivating) && (
+                            <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                        )}
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
+
+            {ConfirmDialog}
 
             {/* Edit User Dialog */}
             <Dialog open={openEdit} onOpenChange={setOpenEdit}>

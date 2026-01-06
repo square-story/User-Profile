@@ -17,6 +17,16 @@ export enum StatusCode {
   TooManyAttempts = 429,
 }
 
+export enum StatusMessage {
+  USER_NOT_FOUND = "User not found",
+  USER_BLOCKED = "Your account has been deactivated. Please contact support.",
+  INVALID_DATA = "Invalid credentials",
+  ALREADY_VERIFIED = "User already verified",
+  EXPERIED_VERIFICATION_CODE = "Invalid or expired verification code",
+  TOO_MANY_TRY = "Too many failed attempts. Please request a new code.",
+  ALREADY_EXISTED = "User already exists"
+}
+
 export interface PaginationParams {
   page: number;
   limit: number;
