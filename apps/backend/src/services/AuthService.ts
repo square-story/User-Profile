@@ -8,7 +8,7 @@ import type { ILoginActivityService } from "../interfaces/ILoginActivityService"
 import type { IUserRepository } from "../interfaces/IUserRepository";
 import type { UserPayload } from "../interfaces/UserPayload";
 import type { IUser } from "../models/User";
-import { StatusCode } from "../types";
+import { StatusCode, StatusMessage } from "../types";
 import { AuthUtils } from "../utils/AuthUtils";
 import { AppError } from "../utils/errorUtils";
 
@@ -24,7 +24,7 @@ export class AuthService implements IAuthService {
   async register(data: CreateUserDto): Promise<void> {
     const existingUser = await this._userRepository.findByEmail(data.email);
     if (existingUser) {
-      throw new AppError("User already exists", StatusCode.Conflict);
+      throw new AppError(StatusMessage.ALREADY_EXISTED, StatusCode.Conflict);
     }
 
     const passwordHash = await AuthUtils.hashPassword(data.passwordHash);
@@ -62,19 +62,19 @@ export class AuthService implements IAuthService {
     const user = await this._userRepository.findByEmail(email);
     if (!user) {
       throw new AppError(
-        "Invalid or expired verification code",
+        StatusMessage.EXPERIED_VERIFICATION_CODE,
         StatusCode.NotFound,
       );
     }
 
     if (user.status === "active") {
-      throw new AppError("User already verified", StatusCode.Conflict);
+      throw new AppError(StatusMessage.ALREADY_VERIFIED, StatusCode.Conflict);
     }
 
     // Check attempts
     if (user.verificationAttempts && user.verificationAttempts >= 5) {
       throw new AppError(
-        "Too many failed attempts. Please request a new code.",
+        StatusMessage.TOO_MANY_TRY,
         StatusCode.TooManyAttempts,
       );
     }
@@ -90,7 +90,7 @@ export class AuthService implements IAuthService {
         verificationAttempts: (user.verificationAttempts || 0) + 1,
       });
       throw new AppError(
-        "Invalid or expired verification code",
+        StatusMessage.EXPERIED_VERIFICATION_CODE,
         StatusCode.BadRequest,
       );
     }
@@ -116,11 +116,11 @@ export class AuthService implements IAuthService {
   async resendVerification(email: string): Promise<void> {
     const user = await this._userRepository.findByEmail(email);
     if (!user) {
-      throw new AppError("User not found", StatusCode.NotFound);
+      throw new AppError(StatusMessage.USER_NOT_FOUND, StatusCode.NotFound);
     }
 
     if (user.status === "active") {
-      throw new AppError("User already verified", StatusCode.Conflict);
+      throw new AppError(StatusMessage.ALREADY_VERIFIED, StatusCode.Conflict);
     }
 
     // Rate limit: 60s
@@ -164,12 +164,6 @@ export class AuthService implements IAuthService {
     }
 
     if (user.status !== "active") {
-      if (user.verificationCode) {
-        // If user has a verification code but is inactive, it means they are pending verification
-        // Or we can check a specific 'pending' status if we had one.
-        // Assuming status 'inactive' + existing code = pending verification.
-        throw new AppError("User not verified", StatusCode.BadRequest, false);
-      }
       throw new AppError(
         "Your account has been deactivated. Please contact support.",
         StatusCode.Forbidden,
